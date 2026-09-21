@@ -94,10 +94,12 @@ jobs:
           curl -L -o templates.tpz "$TEMPLATES_URL"
           unzip -q -o templates.tpz -d "$HOME/.local/share/godot/export_templates/"
           rm templates.tpz
-          # The .tpz filename already encodes the canonical version
-          # subdir — "Godot_v4.3-stable_export_templates.tpz" → "4.3.stable".
-          # Strip the "Godot_v" prefix and "_export_templates.tpz" suffix.
-          VERSION_DIR="$(echo "Godot_v4.3-stable_export_templates.tpz" | sed -e 's/^Godot_v//' -e 's/_export_templates\.tpz$//')"
+          # Hardcode the templates subdir. The .tpz filename uses the
+          # git-branch convention ("4.3-stable") but Godot's
+          # VERSION_NUMBER uses dots ("4.3.stable"). Just hardcode the
+          # version this workflow is pinned to — if we ever upgrade
+          # Godot, change both the engine version and this string.
+          VERSION_DIR="4.3.stable"
           echo "Templates version dir: $VERSION_DIR"
           SRC="$HOME/.local/share/godot/export_templates/templates"
           DST="$HOME/.local/share/godot/export_templates/$VERSION_DIR"
