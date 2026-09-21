@@ -110,7 +110,7 @@ moon_rocket_builder/
 | 2     | Gameplay loop      | ✅ shipped   |
 | 3     | Visual polish      | ✅ shipped   |
 | 4     | Game feel          | ✅ shipped   |
-| 5     | Optimization       | 🚧 planned  |
+| 5     | Optimization       | ✅ shipped   |
 
 See [`docs/phase-1.md`](docs/phase-1.md) for the Phase 1 test plan and
 [`docs/blender-workflow.md`](docs/blender-workflow.md) for how to add

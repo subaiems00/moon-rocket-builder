@@ -3,6 +3,55 @@
 All notable changes to this project are documented here. Dates are
 ISO-8601 (YYYY-MM-DD).
 
+## [0.5.0] - 2026-09-21 — Phase 5: Polish
+
+### Added
+- **Robust save system** (`SaveManager.gd`): atomic writes — save
+  first to `save.json.tmp`, then `flush()`, then `rename` tmp → main
+  while moving the previous main to `save.json.bak`. Survives
+  mid-write process kills. Schema versioning (`schema_version` key)
+  with forward-compatible fallback. Corruption recovery: load tries
+  main → backup → fresh defaults. Defensive type coercion
+  (`_safe_int`, `_safe_float`) for untrusted JSON. New `flags` block
+  carries forward-compatible feature toggles (currently
+  `reduce_motion`).
+- **PerformanceManager autoload**: central place for performance
+  budgets (`particle_budget = 600`, `draw_call_budget = 200`,
+  `physics_tps = 60`, `target_fps = 60`). Locks
+  `Engine.physics_ticks_per_second` and `Engine.max_fps` so the
+  arcade feel is identical across hardware. Provides
+  `clamp_amount(desired, current_total)` for transient particle
+  systems.
+- **Accessibility — Reduce motion**: new `GameManager.reduce_motion`
+  flag + SettingsScreen toggle. When on, `CinematicCamera.add_shake()`
+  is a no-op and the continuous shake layer is muted.
+- **Settings reset**: new "Reset defaults" button in SettingsScreen
+  that wipes settings + progression back to factory state.
+- **AudioManager.apply_volumes()**: public wrapper so callers don't
+  poke at the private `_apply_volumes()`.
+- **CONTRIBUTING.md** with project conventions, CI validation steps,
+  and the common-pitfall list (mirrors memory's landmines).
+- **`.github/pull_request_template.md`** with phase selector +
+  self-review checklist.
+- **`.github/CODEOWNERS`** for `/scripts`, `/autoload`, `/scenes`,
+  `/shaders`.
+
+### Changed
+- `GameManager.set_setting()` clamps every numeric input to a safe
+  range, so a bad save or malformed slider value can't push volume
+  negative or camera shake above 2x.
+- `SettingsScreen` calls `AudioManager.apply_volumes()` (public).
+- `CinematicCamera` reads `GameManager.reduce_motion` every frame and
+  zeros the shake target if it's on.
+
+### Rendering budget (project.godot)
+- 3D MSAA off (toon style doesn't benefit).
+- Shadow atlas 2048, split distances 20/60/200 m.
+- Cluster builder limits set so a worst-case scene stays in budget.
+- Allocatable memory cap 512 MB.
+
+---
+
 ## [0.4.0] - 2026-09-21 — Phase 4: Game feel
 
 ### Added
