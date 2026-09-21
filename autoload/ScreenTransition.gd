@@ -1,12 +1,11 @@
 extends CanvasLayer
-class_name ScreenTransition
 ## Phase 4: a global fade-through-black overlay that sits at layer 200.
 ## Trigger `fade_out(duration)` before a scene swap and `fade_in(duration)`
 ## after. Callers chain them via signals.
 ##
-## Lives at scene root, persists across scenes via the autoload pattern.
-## Place inside `MainMenu.tscn` and add it as an autoload OR set it as
-## a child of every scene root (UIManager looks it up by name).
+## NOTE: this file is registered as an autoload in project.godot under
+## the same name. Do NOT add `class_name ScreenTransition` here — that
+## would clash with the autoload singleton name.
 
 signal fade_out_finished
 signal fade_in_finished
