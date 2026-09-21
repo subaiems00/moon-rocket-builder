@@ -108,7 +108,7 @@ moon_rocket_builder/
 |-------|--------------------|-------------|
 | 1     | Prototype          | ✅ shipped   |
 | 2     | Gameplay loop      | ✅ shipped   |
-| 3     | Visual polish      | 🚧 planned  |
+| 3     | Visual polish      | ✅ shipped   |
 | 4     | Game feel          | 🚧 planned  |
 | 5     | Optimization       | 🚧 planned  |
 

@@ -3,6 +3,57 @@
 All notable changes to this project are documented here. Dates are
 ISO-8601 (YYYY-MM-DD).
 
+## [0.3.0] - 2026-09-21 — Phase 3: Visual polish
+
+### Added
+- **Toon shader** (`shaders/toon.gdshader`): soft color bands + rim
+  light + ambient fill + manual lambert against a uniform `light_dir`.
+  Applied to every rocket part via `RocketPartInstance.use_toon_shader`,
+  so primitive meshes AND `.glb` exports share the same cartoon look.
+  Uses `render_mode unshaded` to dodge the inconsistent `LIGHT` built-in
+  across Godot 4 minor versions.
+- **Moon shader** (`shaders/moon.gdshader`): procedural craters via a
+  hash-grid field + toon banding + soft rim glow. Re-purposed by the
+  Earth to draw cartoon continents.
+- **Sky shader upgrade**: 3-band gradient (ground blue → atmosphere
+  purple → space black) driven by `atmosphere_mix` and `space_mix`
+  uniforms. `FlightManager` blends these with altitude every frame.
+- **Asset loader** (`scripts/AssetLoader.gd`): loads `.glb` files for
+  parts that declare a `glb_path`. Falls back to the primitive mesh
+  if the file isn't present, so the prototype stays fully playable.
+  `PartCatalog` now declares `glb_path` for every part.
+- **Blender asset specs** (`docs/blender/`): 10 per-asset recipes +
+  README with style guide, axis convention, material defaults. An
+  artist can drop a `.glb` into `assets/models/` and the loader
+  picks it up automatically.
+- **Cloud cluster** (`ParticleManager.build_cloud_cluster`): 4-sphere
+  puffy cluster. `ScenePopulator` scatters 8 of them at altitude
+  ~200–320m in the flight scene.
+- **Earth**: 25m cartoon Earth visible from space, with green-tinted
+  "continents" baked in via the moon shader.
+- **Wind puff** (`ParticleManager.build_wind_puff`): one-shot cloud
+  puff spawned at the rocket's current position when a wind gust hits.
+  Wired via the new `wind_gust(strength, world_position)` signal.
+- **Improved stars**: 2200 stars with white / pale-yellow / pale-blue
+  tint variation and per-instance brightness jitter.
+- **LaunchPad scene overhaul**: green grass ground, dedicated launch
+  platform cylinder, taller tower with 3 white gantry arms, dedicated
+  exhaust `OmniLight` below the rocket that ramps up on ignition.
+- **FlightScene overhaul**: bigger moon (12m), Earth node, populated
+  star field via `ScenePopulator`, 8 cloud clusters, inline sky
+  shader, dedicated `WindPulse` and `LeanWarning` HUD labels.
+
+### Fixed (CI catches these)
+- `const SomeDict: Dictionary = {}` is invalid in Godot 4.3 because
+  Dictionaries are mutable — use `static var` instead.
+- `Sky` is a Resource, not a Node — can't `as Sky` cast from
+  `get_node_or_null`. Read via `env.environment.sky`.
+- `const Foo = preload(...)` shadows any `class_name Foo` globally
+  and breaks the parser — drop the const when the class_name already
+  exists.
+
+---
+
 ## [0.2.0] - 2026-09-21 — Phase 2: Gameplay
 
 ### Added
