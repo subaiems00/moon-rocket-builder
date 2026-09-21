@@ -4,6 +4,7 @@
 ![GDScript](https://img.shields.io/badge/GDScript-100%25-blue)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Status](https://img.shields.io/badge/Phase-1%20prototype-orange)
+[![CI](https://github.com/subaiems00/moon-rocket-builder/actions/workflows/godot-validate.yml/badge.svg)](https://github.com/subaiems00/moon-rocket-builder/actions/workflows/godot-validate.yml)
 
 A stylized 3D cartoon rocket-builder and lunar landing game.
 Assemble modular parts, ignite, ride the atmosphere → space transition,
