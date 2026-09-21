@@ -48,20 +48,22 @@ Touch controls are a planned Phase 2 addition.
 
 ## 🏃 Quick start
 
-1. Install **Godot 4.3 or newer** (Standard or Mono).
-2. Clone this repo:
+1. Install **Godot 4.3 or newer** ([download](https://godotengine.org/download)).
+2. **Pre-built binaries**: grab the latest release at
+   [github.com/subaiems00/moon-rocket-builder/releases/latest](https://github.com/subaiems00/moon-rocket-builder/releases/latest)
+   — Windows `.exe`, Linux `.x86_64`, macOS `.app`, or Web `.html`.
+   No Godot install required.
+3. **Or run from source**:
    ```bash
    git clone https://github.com/subaiems00/moon-rocket-builder.git
    cd moon-rocket-builder
+   # Open project.godot in Godot, press F5.
    ```
-3. Open the folder in Godot (*Import* → select `project.godot`).
-4. Press **F5** (or click the ▶ Play button).
-5. The default scene (`MainMenu.tscn`) loads — click **Start Building**.
 
-> **No Blender required.** Every rocket part is built procedurally
-> from `CapsuleMesh`, `CylinderMesh`, `PrismMesh`, and `BoxMesh`
-> primitives declared in `resources/PartCatalog.gd`. Drop in `.glb`
-> exports later — the loader is already wired to prefer them.
+> **No Blender required.** Every rocket is built procedurally from
+> `CapsuleMesh`, `CylinderMesh`, `PrismMesh`, and `BoxMesh` primitives
+> declared in `resources/PartCatalog.gd`. Drop in `.glb` exports later
+> — the loader is already wired to prefer them.
 
 ## 📦 Project layout
 
@@ -90,7 +92,9 @@ moon_rocket_builder/
 
 - **Singletons (autoloads) own state, not scenes.**
   `GameManager` (currency / unlocks / save data), `AudioManager`
-  (buses + SFX), `SaveManager` (I/O), `UIManager` (scene router).
+  (buses + SFX), `SaveManager` (I/O), `UIManager` (scene router),
+  `ScreenTransition` (global fade overlay), `PerformanceManager`
+  (FPS / physics locks).
 - **Signals, not direct refs.** Screens connect to autoload signals
   (`coins_changed`, `flight_finished`, `settings_changed`).
 - **Resources for data.** Every rocket part is a `RocketPartData`;
@@ -99,9 +103,31 @@ moon_rocket_builder/
 - **Procedural where it matters.** Particles, exhaust, SFX, star
   fields all generate at runtime so the prototype runs without
   imported `.wav` / `.png` assets.
-- **Blender is optional.** Set `data.glb_path` on a `RocketPartData`
-  and the builder loads it instead of the primitive mesh. Code stays
-  the same — visuals improve.
+- **Blender is optional.** Set `data.glb_path` on a `RocketPartData` and
+  the builder loads it instead of the primitive mesh. Code stays the
+  same — visuals improve.
+
+## 🛠 Build pipeline
+
+Every push to a `v*` tag triggers `.github/workflows/export-builds.yml`,
+which builds the project for **Windows / Linux / macOS / Web** in
+parallel and attaches the binaries to the GitHub release. The same
+workflow can be triggered manually via the Actions tab
+(`workflow_dispatch`) for ad-hoc builds that don't attach to any
+release.
+
+Local equivalent (requires Godot 4.3+ and the matching export
+templates in `~/.local/share/godot/export_templates/4.3.stable/`):
+
+```bash
+godot --headless --export-release "Windows Desktop" --path .
+godot --headless --export-release "Linux/X11 Desktop" --path .
+godot --headless --export-release "macOS Desktop" --path .
+godot --headless --export-release "Web" --path .
+```
+
+Export presets live in `export_presets.cfg`. Edit them in Godot's
+*Project → Export* dialog or by hand.
 
 ## 🛣 Roadmap
 

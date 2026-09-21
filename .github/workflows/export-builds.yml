@@ -1,0 +1,209 @@
+name: Export builds
+
+# Triggers:
+#   - tag push matching v* → build all 3 platforms, attach binaries to
+#     the GitHub release with the same tag (and create the release
+#     if it doesn't exist).
+#   - workflow_dispatch → manual trigger from the Actions tab. Builds
+#     artifacts but does NOT touch any release. Useful for sanity-
+#     checking the export pipeline.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Which platform(s) to build'
+        required: true
+        type: choice
+        options:
+          - all
+          - windows
+          - linux
+          - macos
+          - web
+        default: all
+
+# Cancel any in-flight run for the same ref.
+concurrency:
+  group: export-builds-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write   # needed to upload release assets
+  actions: read
+
+jobs:
+  export:
+    name: Build ${{ matrix.platform.label }}
+    runs-on: ${{ matrix.platform.os }}
+
+    strategy:
+      # Don't fail the whole matrix if one platform fails — surface the
+      # error so the others still upload.
+      fail-fast: false
+      matrix:
+        include:
+          - platform: {label: "Windows", os: "windows-latest", preset: "Windows Desktop", ext: "exe"}
+          - platform: {label: "Linux",   os: "ubuntu-latest", preset: "Linux/X11 Desktop", ext: "x86_64"}
+          - platform: {label: "macOS",   os: "macos-latest",   preset: "macOS Desktop", ext: "app"}
+          - platform: {label: "Web",     os: "ubuntu-latest", preset: "Web", ext: "zip"}
+        # workflow_dispatch can narrow down to a single platform.
+        # The matrix filter expression makes the choice work.
+
+    # Only build platforms that match the manual input.
+    # Tags always build all of them.
+    if: |
+      (github.event_name == 'push') ||
+      (inputs.platform == 'all') ||
+      (inputs.platform == 'windows' && matrix.platform.label == 'Windows') ||
+      (inputs.platform == 'linux'   && matrix.platform.label == 'Linux')   ||
+      (inputs.platform == 'macos'   && matrix.platform.label == 'macOS')   ||
+      (inputs.platform == 'web'     && matrix.platform.label == 'Web')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            godot/Godot_v4.3-stable_${{ runner.os }}.*
+            ~/.local/share/godot/export_templates/4.3.stable
+          key: godot-4.3-stable-${{ runner.os }}-${{ hashFiles('project.godot') }}
+          restore-keys: |
+            godot-4.3-stable-${{ runner.os }}-
+
+      - name: Install Godot 4.3 (headless)
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p godot
+          cd godot
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            URL="https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_win64.exe.zip"
+            ASSET="Godot_v4.3-stable_win64.exe"
+          elif [ "${{ runner.os }}" = "macOS" ]; then
+            URL="https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_macos.universal.zip"
+            ASSET="Godot_v4.3-stable_macos.universal"
+          else
+            URL="https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip"
+            ASSET="Godot_v4.3-stable_linux.x86_64"
+          fi
+          curl -L -o godot.zip "$URL"
+          unzip -o godot.zip
+          rm godot.zip
+          chmod +x "$ASSET" || true
+
+      - name: Install export templates (4.3.stable)
+        shell: bash
+        env:
+          GODOT_BIN: ${{ runner.os == 'Windows' && 'godot\\Godot_v4.3-stable_win64.exe' || (runner.os == 'macOS' && 'godot/Godot_v4.3-stable_macos.universal.app/Contents/MacOS/Godot' || 'godot/Godot_v4.3-stable_linux.x86_64') }}
+        run: |
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.3.stable"
+          TEMPLATES_URL="https://github.com/godotengine/godot-builds/releases/download/godot-4.3-stable-templates/godot_templates_export.tpz"
+          curl -L -o templates.tpz "$TEMPLATES_URL"
+          unzip -o templates.tpz -d "$HOME/.local/share/godot/export_templates/4.3.stable/"
+          rm templates.tpz
+          ls "$HOME/.local/share/godot/export_templates/4.3.stable/"
+
+      - name: Run export
+        id: export
+        shell: bash
+        env:
+          GODOT_BIN: ${{ runner.os == 'Windows' && 'godot\\Godot_v4.3-stable_win64.exe' || (runner.os == 'macOS' && 'godot/Godot_v4.3-stable_macos.universal.app/Contents/MacOS/Godot' || 'godot/Godot_v4.3-stable_linux.x86_64') }}
+          PRESET_NAME: ${{ matrix.platform.preset }}
+        run: |
+          chmod +x "$GODOT_BIN" 2>/dev/null || true
+          # Headless import to pre-generate .import files.
+          "$GODOT_BIN" --headless --import --path . 2>&1 | tee godot-import.log
+          if grep -iE "^(ERROR|SCRIPT ERROR|Parse Error)" godot-import.log; then
+            echo "Errors during import — see godot-import.log"
+            exit 1
+          fi
+          # Then the actual export.
+          "$GODOT_BIN" --headless --export-release "$PRESET_NAME" --path . 2>&1 | tee godot-export.log
+          if [ ! -f build/${{ matrix.platform.label == 'Web' && 'web/index.html' || (matrix.platform.label == 'macOS' && 'macos/MoonRocketBuilder.app' || (matrix.platform.label == 'Windows' && 'windows/MoonRocketBuilder.exe' || 'linux/MoonRocketBuilder.x86_64')) }} ]; then
+            echo "Export did not produce expected binary"
+            ls -la build/
+            exit 1
+          fi
+
+      - name: Package artifact
+        shell: bash
+        run: |
+          mkdir -p artifact
+          case "${{ matrix.platform.label }}" in
+            Windows)
+              cp build/windows/MoonRocketBuilder.exe artifact/
+              cp build/windows/MoonRocketBuilder.exe.pck artifact/ 2>/dev/null || true
+              # Bundle as a zip for easy download.
+              cd build/windows && zip -r ../../artifact/MoonRocketBuilder-Windows.zip . && cd ../..
+              ASSET_NAME="MoonRocketBuilder-Windows.zip"
+              ;;
+            Linux)
+              cp build/linux/MoonRocketBuilder.x86_64 artifact/
+              cp build/linux/MoonRocketBuilder.x86_64.pck artifact/ 2>/dev/null || true
+              cd build/linux && tar czf ../../artifact/MoonRocketBuilder-Linux.tar.gz . && cd ../..
+              ASSET_NAME="MoonRocketBuilder-Linux.tar.gz"
+              ;;
+            macOS)
+              # .app is a directory — zip it.
+              cd build/macos && zip -r ../../artifact/MoonRocketBuilder-macOS.zip MoonRocketBuilder.app && cd ../..
+              ASSET_NAME="MoonRocketBuilder-macOS.zip"
+              ;;
+            Web)
+              cd build/web && zip -r ../../artifact/MoonRocketBuilder-Web.zip . && cd ../..
+              ASSET_NAME="MoonRocketBuilder-Web.zip"
+              ;;
+          esac
+          echo "ASSET_NAME=$ASSET_NAME" >> "$GITHUB_OUTPUT"
+          ls -la artifact/
+
+      - name: Upload as workflow artifact (always)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MoonRocketBuilder-${{ matrix.platform.label }}
+          path: artifact/*
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Attach to GitHub release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Ensure the release exists. If a tag was pushed without a
+          # release, this creates one with a minimal body. If the
+          # release already exists, this is a no-op.
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::notice::Creating release for tag $TAG"
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "Auto-generated by the export-builds workflow. See the README for build details." \
+              --draft
+          fi
+          gh release upload "$TAG" artifact/* --clobber
+
+  # Aggregate job that depends on all matrix builds — surfaces a
+  # single pass/fail summary on the workflow status page.
+  all-builds:
+    name: All builds
+    needs: export
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summary
+        run: |
+          if [ "${{ needs.export.result }}" = "success" ]; then
+            echo "✅ All export builds passed."
+          else
+            echo "❌ Some export builds failed — see the matrix jobs above."
+            exit 1
+          fi

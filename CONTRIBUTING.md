@@ -23,6 +23,17 @@ godot --headless --import
 
 If you see `SCRIPT ERROR:` or `Parse Error:` lines, CI will fail too.
 
+You can also exercise the export pipeline locally (requires Godot 4.3+
+plus the matching export templates in
+`~/.local/share/godot/export_templates/4.3.stable/`):
+
+```bash
+godot --headless --export-release "Windows Desktop" --path .
+godot --headless --export-release "Linux/X11 Desktop" --path .
+godot --headless --export-release "macOS Desktop" --path .
+godot --headless --export-release "Web" --path .
+```
+
 ## Project conventions
 
 - **GDScript only** — no C# in this project. The game is small enough

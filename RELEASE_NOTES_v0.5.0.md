@@ -29,6 +29,9 @@ realistic engineering, just colorful chaos.
 - ⚙️ **Accessibility** — Reduce motion toggle mutes all camera shake.
 - ✅ **CI gate** — every push to `main` runs Godot 4.3 headless and
   fails on any parse error.
+- 📦 **Export-builds workflow** — `.github/workflows/export-builds.yml`
+  builds Windows / Linux / macOS / Web binaries on every tag push and
+  attaches them to the GitHub release.
 
 ## Run it
 
@@ -39,6 +42,10 @@ git clone https://github.com/subaiems00/moon-rocket-builder.git
 cd moon-rocket-builder
 # Open project.godot in Godot, press F5.
 ```
+
+Pre-built binaries are attached to every release at
+https://github.com/subaiems00/moon-rocket-builder/releases — no Godot
+install required, just download and run.
 
 That's it — no dependencies to install, no build step. The procedural
 SFX are synthesized at runtime, the toon shader is included, every
@@ -53,7 +60,7 @@ into `assets/models/` and the loader picks it up automatically (see
 | Menus   | Mouse  |
 | Flight  | `W` / `↑` thrust • `S` / `↓` pitch down • `A`/`D` yaw • `Space` boost |
 
-## What's in this release
+## What ships in this release
 
 **Phase 1 — Prototype**: 11 scenes, modular rocket builder, cinematic
 launch, arcade flight, results screen, settings, procedural SFX,
@@ -79,6 +86,10 @@ locks), Reduce motion accessibility toggle, Reset defaults, settings
 validation, CONTRIBUTING.md + PR template + CODEOWNERS, rendering
 budget in `project.godot`.
 
+**Export pipeline**: `export_presets.cfg` defines Windows / Linux /
+macOS / Web presets; `.github/workflows/export-builds.yml` builds all
+platforms on every `v*` tag and attaches the binaries to the release.
+
 ## Known limitations / what's deferred
 
 - No `.glb` assets shipped — primitive meshes only. The loader is
@@ -95,12 +106,13 @@ budget in `project.godot`.
 
 ## Stats
 
-- 84 files committed
-- ~256 KB uncompressed source
+- 85+ files committed
+- ~260 KB uncompressed source
 - 6 Godot autoloads (GameManager, AudioManager, SaveManager, UIManager,
   ScreenTransition, PerformanceManager)
 - 17 GDScript classes
 - 11 scenes, 3 custom shaders
+- 4 export presets (Windows / Linux / macOS / Web)
 
 ## Acknowledgements
 
