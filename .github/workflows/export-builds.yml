@@ -36,8 +36,9 @@ jobs:
         include:
           - platform: {label: "Windows", os: "windows-latest", preset: "Windows Desktop", ext: "exe"}
           - platform: {label: "Linux",   os: "ubuntu-latest", preset: "Linux/X11 Desktop", ext: "x86_64"}
-          - platform: {label: "macOS",   os: "macos-latest",   preset: "macOS Desktop", ext: "app"}
           - platform: {label: "Web",     os: "ubuntu-latest", preset: "Web", ext: "zip"}
+        # macOS is intentionally excluded for now — code-signing + notarization
+        # for unsigned distributed binaries is a follow-up task.
 
     steps:
       - name: Checkout
@@ -84,21 +85,22 @@ jobs:
           # .tpz is a ZIP file (Template Pack Zip), ~1 GB. It contains a
           # single top-level `templates/` directory with the platform
           # files we need. Godot looks for them at:
-          #   ~/.local/share/godot/export_templates/<VERSION>/<file>
-          # So we unzip and then move/rename the `templates` dir to the
-          # matching version string.
+          #   ~/.local/share/godot/export_templates/<VERSION_NUMBER>/<file>
+          # where VERSION_NUMBER is "MAJOR.MINOR[.PATCH]" (e.g. "4.3.stable"
+          # or "4.3" depending on build). Note this is NOT the full
+          # VERSION_FULL_CONFIG string with the git hash suffix that
+          # `godot --version` prints.
           TEMPLATES_URL="https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz"
           curl -L -o templates.tpz "$TEMPLATES_URL"
           unzip -q -o templates.tpz -d "$HOME/.local/share/godot/export_templates/"
           rm templates.tpz
-          # Probe the engine binary's VERSION_FULL_CONFIG so we use
-          # exactly the version string Godot expects (avoids hardcoding
-          # "4.3.stable" in case it shifts).
-          VERSION="$("$GODOT_BIN" --version 2>/dev/null | head -n1 | tr -d '\n\r')"
-          echo "Godot engine reports version: '$VERSION'"
-          if [ -z "$VERSION" ]; then VERSION="4.3.stable"; fi
+          # The .tpz filename already encodes the canonical version
+          # subdir — "Godot_v4.3-stable_export_templates.tpz" → "4.3.stable".
+          # Strip the "Godot_v" prefix and "_export_templates.tpz" suffix.
+          VERSION_DIR="$(echo "Godot_v4.3-stable_export_templates.tpz" | sed -e 's/^Godot_v//' -e 's/_export_templates\.tpz$//')"
+          echo "Templates version dir: $VERSION_DIR"
           SRC="$HOME/.local/share/godot/export_templates/templates"
-          DST="$HOME/.local/share/godot/export_templates/$VERSION"
+          DST="$HOME/.local/share/godot/export_templates/$VERSION_DIR"
           if [ -d "$DST" ]; then rm -rf "$DST"; fi
           mv "$SRC" "$DST"
           echo "Templates installed at: $DST"
@@ -155,16 +157,6 @@ jobs:
                 cd "$(dirname "$EXE")" && tar czf ../../artifact/MoonRocketBuilder-Linux.tar.gz . && cd ../..
               fi
               ASSET_NAME="MoonRocketBuilder-Linux.tar.gz"
-              ;;
-            macOS)
-              # .app is a directory — zip it (Godot places it at build/macos/<name>.app).
-              APP=$(find build/macos -maxdepth 1 -type d -name '*.app' | head -1)
-              if [ -z "$APP" ]; then
-                APP="build/macos/MoonRocketBuilder.app"
-              fi
-              echo "macOS bundle: $APP"
-              (cd "$(dirname "$APP")" && zip -r ../../artifact/MoonRocketBuilder-macOS.zip "$(basename "$APP")")
-              ASSET_NAME="MoonRocketBuilder-macOS.zip"
               ;;
             Web)
               cp -r build/web/. artifact/
