@@ -81,23 +81,17 @@ jobs:
           GODOT_BIN: ${{ runner.os == 'Windows' && 'godot\\Godot_v4.3-stable_win64.exe' || (runner.os == 'macOS' && 'godot/Godot_v4.3-stable_macos.universal.app/Contents/MacOS/Godot' || 'godot/Godot_v4.3-stable_linux.x86_64') }}
         run: |
           mkdir -p "$HOME/.local/share/godot/export_templates/4.3.stable"
-          # Official export-templates URL — under godotengine/godot/releases,
-          # not godot-builds (which would 404).
+          # .tpz is a ZIP file (Template Pack Zip), ~1 GB. unzip directly
+          # into the templates dir. The archive contains a `templates/`
+          # subdir + a `templates/<version>/...` tree.
           TEMPLATES_URL="https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz"
           curl -L -o templates.tpz "$TEMPLATES_URL"
-          # .tpz is just a tarball.
-          mkdir -p /tmp/godot-templates-extract
-          tar -xzf templates.tpz -C /tmp/godot-templates-extract
-          if [ -d /tmp/godot-templates-extract/templates ]; then
-            cp -r /tmp/godot-templates-extract/templates/* \
-              "$HOME/.local/share/godot/export_templates/4.3.stable/"
-          else
-            cp -r /tmp/godot-templates-extract/* \
-              "$HOME/.local/share/godot/export_templates/4.3.stable/"
-          fi
-          rm -rf templates.tpz /tmp/godot-templates-extract
+          unzip -q -o templates.tpz -d "$HOME/.local/share/godot/export_templates/"
+          rm templates.tpz
           echo "Templates installed:"
-          ls "$HOME/.local/share/godot/export_templates/4.3.stable/"
+          ls "$HOME/.local/share/godot/export_templates/"
+          echo "---"
+          find "$HOME/.local/share/godot/export_templates/4.3.stable" -maxdepth 2 -type d | head -20
 
       - name: Run export
         id: export
