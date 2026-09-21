@@ -42,9 +42,15 @@ func _ready() -> void:
 	_stars = get_node_or_null(stars_path) as MultiMeshInstance3D
 	_clouds = get_node_or_null(clouds_path) as Node3D
 	if sky_material_path != NodePath(""):
-		var sky: Sky = get_node_or_null(sky_material_path) as Sky
-		if sky and sky.sky_material is ShaderMaterial:
-			_sky_material = sky.sky_material as ShaderMaterial
+		var sky_node: Node = get_node_or_null(sky_material_path)
+		if sky_node and sky_node.has_method("get"):
+			# Sky is a Resource, not a Node — it lives in environment.sky.
+			# We grab it via the parent WorldEnvironment.environment.
+			var env_node: WorldEnvironment = get_node_or_null(environment_path)
+			if env_node and env_node.environment:
+				var sky_res: Sky = env_node.environment.sky
+				if sky_res and sky_res.sky_material is ShaderMaterial:
+					_sky_material = sky_res.sky_material as ShaderMaterial
 	if _stars:
 		_stars.visible = false
 	if _clouds:

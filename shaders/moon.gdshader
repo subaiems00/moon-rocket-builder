@@ -1,16 +1,20 @@
 // Cartoon moon shader — toon bands + procedural craters via a
 // noise function in fragment space. Reads the normal direction and
 // bakes dark spots where (theta, phi) land on a hash grid.
+//
+// Phase 3: render_mode = unshaded so we compute lighting manually with
+// a hard-coded light direction. This avoids the LIGHT built-in which
+// is inconsistent across Godot 4 minor versions.
 
 shader_type spatial;
 render_mode
 	cull_back,
-	diffuse_lambert,
-	specular_disabled,
+	unshaded,
 	shadows_disabled;
 
 uniform vec4 albedo : source_color = vec4(0.97, 0.94, 0.86, 1.0);
 uniform vec4 crater_color : source_color = vec4(0.55, 0.45, 0.34, 1.0);
+uniform vec3 light_dir : source_color = vec3(0.4, 0.5, 0.7);
 uniform float crater_density : hint_range(0.0, 30.0, 0.5) = 8.0;
 uniform float crater_size : hint_range(0.0, 0.5, 0.01) = 0.18;
 uniform float crater_softness : hint_range(0.01, 0.5, 0.005) = 0.06;
@@ -25,6 +29,7 @@ float hash21(vec2 p) {
 
 void fragment() {
 	vec3 n = normalize(NORMAL);
+	vec3 l = normalize(light_dir);
 	vec2 uv = vec2(atan(n.z, n.x), asin(n.y));
 	// Crater field — loop over a grid of points on the sphere.
 	float crater_mask = 0.0;
@@ -44,7 +49,7 @@ void fragment() {
 	vec3 base_color = mix(albedo.rgb, crater_color.rgb, crater_mask);
 
 	// Soft toon banding on top of the crater field.
-	float lit = clamp(dot(n, LIGHT) * 0.5 + 0.5, 0.0, 1.0);
+	float lit = clamp(dot(n, l) * 0.5 + 0.5, 0.0, 1.0);
 	float toon = floor(lit * 3.0) / 3.0;
 	base_color *= mix(1.0, toon * 1.0 + 0.5, band_strength);
 
