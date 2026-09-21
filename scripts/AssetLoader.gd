@@ -11,7 +11,7 @@ class_name AssetLoader
 ##   3. Set `RocketPartData.glb_path = "res://assets/models/nose_classic.glb"`.
 ##   4. The next time the game runs, the builder uses it.
 
-const _cache: Dictionary = {}
+static var _cache: Dictionary = {}  # mutable, so can't be const
 
 
 ## Load the mesh for a part. Returns a Mesh resource (primitive or .glb)
