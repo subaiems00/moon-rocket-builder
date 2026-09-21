@@ -1,0 +1,175 @@
+[gd_scene load_steps=14 format=3 uid="uid://mrb_launchpad_0001"]
+
+[ext_resource type="Script" path="res://scripts/LaunchSequence.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/RocketController.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/RocketBuilder.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/CinematicCamera.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/CountdownOverlay.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/ui/MRBButton.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/ui/LaunchPadUI.gd" id="7"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(200, 0.5, 200)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(200, 0.5, 200)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.40, 0.45, 0.30, 1)
+roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_tower"]
+top_radius = 0.4
+bottom_radius = 0.55
+height = 12.0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_tower"]
+radius = 0.55
+height = 12.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tower"]
+albedo_color = Color(0.85, 0.78, 0.50, 1)
+metallic = 0.6
+roughness = 0.45
+
+[sub_resource type="Environment" id="Environment_LP"]
+background_mode = 2
+ambient_light_source = 3
+ambient_light_color = Color(0.85, 0.85, 0.95, 1)
+ambient_light_energy = 0.55
+
+[sub_resource type="World3D" id="World3D_LP"]
+environment = SubResource("Environment_LP")
+
+[node name="LaunchPad" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_LP")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.94, -0.24, 0.23, 0, 0.69, 0.72, -0.34, -0.68, 0.65, 8, 16, 8)
+light_energy = 1.1
+light_color = Color(1.0, 0.95, 0.85, 1)
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_ground")
+material_override = SubResource("StandardMaterial3D_ground")
+
+[node name="GroundCollision" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="LaunchTower" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0)
+
+[node name="TowerMesh" type="MeshInstance3D" parent="LaunchTower"]
+mesh = SubResource("CylinderMesh_tower")
+material_override = SubResource("StandardMaterial3D_tower")
+
+[node name="TowerCollision" type="CollisionShape3D" parent="LaunchTower"]
+shape = SubResource("CylinderShape3D_tower")
+
+[node name="WarningLights" type="Node3D" parent="LaunchTower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5, 0)
+
+[node name="Warning1" type="OmniLight3D" parent="LaunchTower/WarningLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0, 0)
+light_color = Color(1.0, 0.30, 0.30, 1)
+light_energy = 0.0
+omni_range = 8.0
+
+[node name="Warning2" type="OmniLight3D" parent="LaunchTower/WarningLights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0, 0)
+light_color = Color(1.0, 0.30, 0.30, 1)
+light_energy = 0.0
+omni_range = 8.0
+
+[node name="Rocket" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+gravity_scale = 0.0
+script = ExtResource("2")
+builder_path = NodePath("../Rocket/RocketBuilder")
+
+[node name="RocketBuilder" type="Node3D" parent="Rocket"]
+script = ExtResource("3")
+rocket_root_path = NodePath("RocketRoot")
+
+[node name="RocketRoot" type="Node3D" parent="Rocket/RocketBuilder"]
+
+[node name="Instances" type="Node3D" parent="Rocket/RocketBuilder/RocketRoot"]
+
+[node name="Exhaust" type="GPUParticles3D" parent="Rocket"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.0, 0)
+
+[node name="LaunchCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.94, 0.34, 0, -0.34, 0.94, 7, 4, 12)
+current = true
+script = ExtResource("4")
+target_path = NodePath("../Rocket")
+offset = Vector3(7, 4, 12)
+look_ahead = Vector3(0, 2, 0)
+follow_speed = 3.5
+
+[node name="LaunchSequence" type="Node" parent="."]
+script = ExtResource("1")
+rocket_path = NodePath("../Rocket")
+launch_camera_path = NodePath("../LaunchCamera")
+warning_lights_path = NodePath("../LaunchTower/WarningLights")
+exhaust_path = NodePath("../Rocket/Exhaust")
+countdown_seconds = 3.0
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="CountdownOverlay" type="Control" parent="UI"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("5")
+
+[node name="BigText" type="Label" parent="UI/CountdownOverlay"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -120.0
+offset_right = 120.0
+offset_bottom = 120.0
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 220
+
+[node name="TopBar" type="HBoxContainer" parent="UI"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -120.0
+offset_right = 260.0
+offset_bottom = -32.0
+theme_override_constants/separation = 16
+
+[node name="BackButton" type="Button" parent="UI/TopBar"]
+custom_minimum_size = Vector2(220, 64)
+text = "← Workshop"
+script = ExtResource("6")
+font_size = 22
+base_color = Color(0.55, 0.55, 0.65, 1)
+
+[node name="GoButton" type="Button" parent="UI/TopBar"]
+custom_minimum_size = Vector2(280, 64)
+text = "GO!"
+script = ExtResource("6")
+font_size = 28
+base_color = Color(1.0, 0.55, 0.30, 1)
+
+[node name="AutoStart" type="Timer" parent="."]
+wait_time = 1.5
+one_shot = true
+autostart = true
+
+[node name="LaunchPadUI" type="Node" parent="."]
+script = ExtResource("7")

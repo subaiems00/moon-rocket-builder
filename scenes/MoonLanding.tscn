@@ -1,0 +1,86 @@
+[gd_scene load_steps=8 format=3 uid="uid://mrb_moonlanding_0001"]
+
+[ext_resource type="Script" path="res://scripts/MoonLanding.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/MRBButton.gd" id="2"]
+
+[sub_resource type="SphereMesh" id="MoonSphere"]
+radius = 18.0
+height = 36.0
+radial_segments = 64
+rings = 32
+
+[sub_resource type="StandardMaterial3D" id="MoonMat"]
+albedo_color = Color(0.92, 0.88, 0.78, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="GroundMesh"]
+size = Vector3(60, 0.5, 60)
+
+[sub_resource type="StandardMaterial3D" id="GroundMat"]
+albedo_color = Color(0.80, 0.78, 0.68, 1)
+roughness = 0.95
+
+[sub_resource type="Environment" id="Env_M"]
+background_mode = 2
+ambient_light_color = Color(0.10, 0.10, 0.16, 1)
+ambient_light_energy = 0.5
+fog_enabled = true
+fog_light_color = Color(0.10, 0.10, 0.16, 1)
+fog_density = 0.01
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky"]
+sky_top_color = Color(0.03, 0.02, 0.10, 1)
+sky_horizon_color = Color(0.05, 0.04, 0.12, 1)
+ground_bottom_color = Color(0.03, 0.02, 0.10, 1)
+ground_horizon_color = Color(0.05, 0.04, 0.12, 1)
+
+[node name="MoonLanding" type="Node3D"]
+script = ExtResource("1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_M")
+
+[node name="Sky" type="Sky" parent="WorldEnvironment"]
+sky_material = SubResource("Sky")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.86, -0.35, 0.36, 0, 0.72, 0.69, -0.5, -0.6, 0.62, 0, 30, 0)
+light_energy = 0.8
+light_color = Color(1.0, 0.95, 0.85, 1)
+
+[node name="MoonSphere" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, -200)
+mesh = SubResource("MoonSphere")
+material_override = SubResource("MoonMat")
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("GroundMesh")
+material_override = SubResource("GroundMat")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 600.0
+offset_bottom = 120.0
+text = "🌙 Moon Landing"
+theme_override_font_sizes/font_size = 48
+
+[node name="Subtitle" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 100.0
+offset_right = 600.0
+offset_bottom = 160.0
+text = "Phase 3 will animate a cinematic landing here."
+theme_override_font_sizes/font_size = 18
+
+[node name="ContinueButton" type="Button" parent="."]
+offset_left = 40.0
+offset_top = 700.0 - 80.0 * 1
+offset_right = 320.0
+offset_bottom = 700.0
+text = "Continue →"
+script = ExtResource("2")
+font_size = 24
+base_color = Color(1.0, 0.55, 0.30, 1)

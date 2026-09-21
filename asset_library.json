@@ -1,0 +1,17 @@
+{
+  "name": "Moon Rocket Builder",
+  "description": "Stylized 3D cartoon rocket-builder and lunar landing game built with Godot 4.x",
+  "keywords": ["godot", "gdscript", "game", "rocket", "3d", "cartoon", "lunar-landing", "arcade", "educational"],
+  "homepage": "https://github.com/subaiems00/moon-rocket-builder",
+  "license": "MIT",
+  "engine": "godot",
+  "engine_version": "4.3",
+  "category": "game",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subaiems00/moon-rocket-builder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/subaiems00/moon-rocket-builder/issues"
+  }
+}

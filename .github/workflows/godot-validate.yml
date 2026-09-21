@@ -1,0 +1,61 @@
+name: Validate Godot project
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  import-check:
+    name: Headless import check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot/Godot_v4.3-stable_linux.x86_64
+          key: godot-4.3-stable
+
+      - name: Install Godot 4.3 (headless)
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p godot
+          curl -L -o godot/godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -o godot/godot.zip -d godot/
+          rm godot/godot.zip
+          chmod +x godot/Godot_v4.3-stable_linux.x86_64
+
+      - name: Headless import (writes .godot/, exits clean)
+        run: |
+          ./godot/Godot_v4.3-stable_linux.x86_64 \
+            --headless --import 2>&1 | tee godot-import.log
+          # If a script failed to parse, the import will still exit 0 in some
+          # cases — surface the log so we can grep it.
+          echo "---import log tail---"
+          tail -n 50 godot-import.log
+          # Fail if any line looks like an error.
+          if grep -iE "^(ERROR|SCRIPT ERROR|SCRIPT ERROR:|Parse Error)" godot-import.log; then
+            echo "Errors detected in Godot import log"
+            exit 1
+          fi
+
+      - name: Headless script check
+        run: |
+          ./godot/Godot_v4.3-stable_linux.x86_64 \
+            --headless --check-only --script scripts/RocketBuilder.gd 2>&1 | tail -20 || true
+
+      - name: Upload import log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-import-log
+          path: godot-import.log
+          if-no-files-found: ignore

@@ -1,0 +1,134 @@
+[gd_scene load_steps=6 format=3 uid="uid://mrb_workshop_0001"]
+
+[ext_resource type="Script" path="res://scripts/ui/RocketWorkshop.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/RocketBuilder.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/CinematicCamera.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/ui/MRBButton.gd" id="4"]
+
+[sub_resource type="Environment" id="Environment_W"]
+background_mode = 2
+ambient_light_source = 3
+ambient_light_color = Color(0.85, 0.85, 0.95, 1)
+ambient_light_energy = 0.45
+
+[sub_resource type="World3D" id="World3D_W"]
+environment = SubResource("Environment_W")
+
+[node name="RocketWorkshop" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.03, 0.12, 1)
+
+[node name="Root" type="HBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+theme_override_constants/separation = 16
+
+[node name="PartColumn" type="VBoxContainer" parent="Root"]
+custom_minimum_size = Vector2(320, 0)
+size_flags_vertical = 3
+
+[node name="PartColumnTitle" type="Label" parent="Root/PartColumn"]
+text = "Parts"
+theme_override_font_sizes/font_size = 24
+
+[node name="CategoryTabs" type="HBoxContainer" parent="Root/PartColumn"]
+custom_minimum_size = Vector2(0, 48)
+
+[node name="PartGrid" type="GridContainer" parent="Root/PartColumn"]
+columns = 2
+custom_minimum_size = Vector2(0, 360)
+
+[node name="PaintRowTitle" type="Label" parent="Root/PartColumn"]
+text = "Paint"
+theme_override_font_sizes/font_size = 18
+
+[node name="PaintRow" type="HBoxContainer" parent="Root/PartColumn"]
+custom_minimum_size = Vector2(0, 48)
+
+[node name="PreviewColumn" type="VBoxContainer" parent="Root"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TopBar" type="HBoxContainer" parent="Root/PreviewColumn"]
+custom_minimum_size = Vector2(0, 48)
+
+[node name="BackButton" type="Button" parent="Root/PreviewColumn/TopBar"]
+custom_minimum_size = Vector2(120, 48)
+text = "← Menu"
+script = ExtResource("4")
+font_size = 18
+base_color = Color(0.55, 0.55, 0.65, 1)
+
+[node name="Spacer" type="Control" parent="Root/PreviewColumn/TopBar"]
+size_flags_horizontal = 3
+
+[node name="TitleLabel" type="Label" parent="Root/PreviewColumn/TopBar"]
+text = "Workshop"
+theme_override_font_sizes/font_size = 26
+
+[node name="PreviewPanel" type="PanelContainer" parent="Root/PreviewColumn"]
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 360)
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="Root/PreviewColumn/PreviewPanel"]
+stretch = true
+custom_minimum_size = Vector2(0, 360)
+
+[node name="SubViewport" type="SubViewport" parent="Root/PreviewColumn/PreviewPanel/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(640, 360)
+world_3d = SubResource("World3D_W")
+
+[node name="World" type="Node3D" parent="Root/PreviewColumn/PreviewPanel/SubViewportContainer/SubViewport"]
+
+[node name="Rocket" type="Node3D" parent="Root/PreviewColumn/PreviewPanel/SubViewportContainer/SubViewport/World"]
+script = ExtResource("2")
+
+[node name="RocketRoot" type="Node3D" parent="Root/PreviewColumn/PreviewPanel/SubViewportContainer/SubViewport/World/Rocket"]
+
+[node name="Instances" type="Node3D" parent="Root/PreviewColumn/PreviewPanel/SubViewportContainer/SubViewport/World/Rocket/RocketRoot"]
+
+[node name="PreviewCamera" type="Camera3D" parent="Root/PreviewColumn/PreviewPanel/SubViewportContainer/SubViewport/World"]
+transform = Transform3D(0.94, 0, -0.34, 0, 1, 0, 0.34, 0, 0.94, 4.5, 2.0, 4.5)
+script = ExtResource("3")
+offset = Vector3(4.5, 2.0, 4.5)
+look_ahead = Vector3(0, 1.5, 0)
+follow_speed = 4.0
+
+[node name="KeyLight" type="DirectionalLight3D" parent="Root/PreviewColumn/PreviewPanel/SubViewportContainer/SubViewport/World"]
+transform = Transform3D(0.86, -0.35, 0.36, 0, 0.72, 0.69, -0.5, -0.6, 0.62, 0, 5, 0)
+light_energy = 1.4
+
+[node name="LaunchBar" type="HBoxContainer" parent="Root/PreviewColumn"]
+custom_minimum_size = Vector2(0, 80)
+
+[node name="Spacer2" type="Control" parent="Root/PreviewColumn/LaunchBar"]
+size_flags_horizontal = 3
+
+[node name="LaunchButton" type="Button" parent="Root/PreviewColumn/LaunchBar"]
+custom_minimum_size = Vector2(260, 70)
+text = "🚀 LAUNCH"
+script = ExtResource("4")
+font_size = 30
+base_color = Color(1.0, 0.55, 0.30, 1)
+
+[node name="StatsColumn" type="VBoxContainer" parent="Root"]
+custom_minimum_size = Vector2(280, 0)
+size_flags_vertical = 3
+
+[node name="StatsTitle" type="Label" parent="Root/StatsColumn"]
+text = "Stats"
+theme_override_font_sizes/font_size = 24
+
+[node name="StatsSpacer" type="Control" parent="Root/StatsColumn"]
+custom_minimum_size = Vector2(0, 8)

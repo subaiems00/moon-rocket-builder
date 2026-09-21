@@ -1,0 +1,42 @@
+# Force LF line endings for Godot / web / scripts. CRLF stays for Windows
+# batch files. Without this, Git on Windows will rewrite line endings
+# and Godot can choke on CRLF in shader files.
+
+* text=auto eol=lf
+
+# Windows-only files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Godot scripts must be LF
+*.gd text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.gdshader text eol=lf
+*.gdshaderinc text eol=lf
+
+# Markdown
+*.md text eol=lf
+
+# YAML / JSON / TOML
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+
+# SVG is binary-ish but text-readable
+*.svg text eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.glb binary
+*.gltf binary
+*.wav binary
+*.ogg binary
+*.mp3 binary

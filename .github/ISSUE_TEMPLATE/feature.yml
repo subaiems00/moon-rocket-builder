@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest something for the game
+title: "[feature] "
+labels: [enhancement]
+assignees: [subaiems00]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One-line description.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
+      description: What gameplay problem does this solve, or what fun does it add?
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: How would it work?
+      description: Sketch of the mechanic, UI, or art change. Screenshots welcome.
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      description: Which phase of the roadmap does this fit?
+      options:
+        - "Phase 2 — gameplay"
+        - "Phase 3 — visual polish"
+        - "Phase 4 — game feel"
+        - "Phase 5 — optimization"
+        - "Undecided / cross-cutting"

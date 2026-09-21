@@ -1,0 +1,56 @@
+name: Bug report
+description: Something in the game doesn't work as expected
+title: "[bug] "
+labels: [bug]
+assignees: [subaiems00]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: A clear, short description of the bug.
+      placeholder: |
+        The rocket spins infinitely when I press Launch without any fins.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open MainMenu
+        2. Click Start Building
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: e.g. Windows 11, Ubuntu 24.04, macOS 15
+  - type: input
+    id: godot
+    attributes:
+      label: Godot version
+      placeholder: 4.3-stable
+  - type: input
+    id: commit
+    attributes:
+      label: Branch / commit
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots / logs
+      description: Paste the Godot Output panel errors or attach a screenshot.

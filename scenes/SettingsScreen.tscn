@@ -1,0 +1,95 @@
+[gd_scene load_steps=4 format=3 uid="uid://mrb_settings_0001"]
+
+[ext_resource type="Script" path="res://scripts/ui/SettingsScreen.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/MRBButton.gd" id="2"]
+
+[node name="SettingsScreen" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.03, 0.12, 1)
+
+[node name="Root" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_top = 80.0
+offset_right = -80.0
+offset_bottom = -80.0
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="Root"]
+text = "Settings"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 48
+
+[node name="Sliders" type="GridContainer" parent="Root"]
+columns = 2
+custom_minimum_size = Vector2(0, 320)
+theme_override_constants/h_separation = 32
+theme_override_constants/v_separation = 16
+
+[node name="MasterLabel" type="Label" parent="Root/Sliders"]
+text = "Master volume"
+theme_override_font_sizes/font_size = 22
+
+[node name="Master" type="HSlider" parent="Root/Sliders"]
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 0.9
+custom_minimum_size = Vector2(280, 0)
+
+[node name="MusicLabel" type="Label" parent="Root/Sliders"]
+text = "Music"
+theme_override_font_sizes/font_size = 22
+
+[node name="Music" type="HSlider" parent="Root/Sliders"]
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 0.7
+custom_minimum_size = Vector2(280, 0)
+
+[node name="SFXLabel" type="Label" parent="Root/Sliders"]
+text = "Sound effects"
+theme_override_font_sizes/font_size = 22
+
+[node name="SFX" type="HSlider" parent="Root/Sliders"]
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 0.9
+custom_minimum_size = Vector2(280, 0)
+
+[node name="ShakeLabel" type="Label" parent="Root/Sliders"]
+text = "Camera shake"
+theme_override_font_sizes/font_size = 22
+
+[node name="Shake" type="HSlider" parent="Root/Sliders"]
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+custom_minimum_size = Vector2(280, 0)
+
+[node name="MuteLabel" type="Label" parent="Root/Sliders"]
+text = "Mute all"
+theme_override_font_sizes/font_size = 22
+
+[node name="Mute" type="CheckButton" parent="Root/Sliders"]
+button_pressed = false
+
+[node name="Buttons" type="HBoxContainer" parent="Root"]
+size_flags_horizontal = 4
+
+[node name="BackButton" type="Button" parent="Root/Buttons"]
+custom_minimum_size = Vector2(220, 64)
+text = "← Back"
+script = ExtResource("2")
+font_size = 22
+base_color = Color(0.55, 0.55, 0.65, 1)

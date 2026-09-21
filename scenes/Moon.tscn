@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://mrb_moon_0001"]
+
+[node name="Moon" type="Node3D"]
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh")
+
+[sub_resource type="SphereMesh" id="SphereMesh"]
+radius = 5.0
+height = 10.0
+radial_segments = 48
+rings = 32
