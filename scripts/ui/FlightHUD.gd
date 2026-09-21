@@ -6,6 +6,8 @@ extends Control
 @export var rocket_path: NodePath
 @export var wind_puff_path: NodePath   # Node3D parent for wind puff effects
 
+const ParticleManager = preload("res://scripts/ParticleManager.gd")
+
 
 func _ready() -> void:
 	var rocket := get_node_or_null(rocket_path) as Node
@@ -81,7 +83,6 @@ func _on_wind_gust(strength: float, world_pos: Vector3) -> void:
 	if wind_puff_path != NodePath(""):
 		var puff_parent := get_node_or_null(wind_puff_path) as Node3D
 		if puff_parent:
-			var ParticleManager = preload("res://scripts/ParticleManager.gd")
 			var puff: GPUParticles3D = ParticleManager.build_wind_puff()
 			puff.global_position = world_pos
 			puff_parent.add_child(puff)

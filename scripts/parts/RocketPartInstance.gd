@@ -11,7 +11,6 @@ class_name RocketPartInstance
 signal material_changed()
 
 const RocketPartData = preload("res://resources/RocketPartData.gd")
-const AssetLoader = preload("res://scripts/AssetLoader.gd")
 const ToonShader = preload("res://shaders/toon.gdshader")
 
 @export var data: RocketPartData
