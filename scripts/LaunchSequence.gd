@@ -81,12 +81,17 @@ func _ignite() -> void:
 	if _exhaust:
 		_exhaust.emitting = true
 	AudioManager.play_sfx("engine_start")
-	# Brief engine glow ramp.
+	# Brief engine glow ramp on every engine instance + the floor lamp.
 	if _rocket and _rocket.has_node("RocketRoot"):
 		var parts := _rocket.get_node("RocketRoot/Instances").get_children()
 		for p in parts:
 			if p.has_method("set_engine_glow"):
 				p.set_engine_glow(2.5)
+	# Phase 3: pump the ground-level exhaust lamp.
+	var lamp: Node = _rocket.get_node_or_null("ExhaustGlow") if _rocket else null
+	if lamp and lamp is OmniLight3D:
+		var tw := create_tween()
+		tw.tween_property(lamp, "light_energy", 8.0, 0.4)
 
 
 func _lift_off() -> void:

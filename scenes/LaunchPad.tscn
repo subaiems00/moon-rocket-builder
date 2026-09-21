@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://mrb_launchpad_0001"]
+[gd_scene load_steps=15 format=3 uid="uid://mrb_launchpad_0001"]
 
 [ext_resource type="Script" path="res://scripts/LaunchSequence.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/RocketController.gd" id="2"]
@@ -14,32 +14,55 @@ size = Vector3(200, 0.5, 200)
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
 size = Vector3(200, 0.5, 200)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.40, 0.45, 0.30, 1)
+[sub_resource type="StandardMaterial3D" id="Mat_grass"]
+albedo_color = Color(0.42, 0.62, 0.30, 1)
 roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_platform"]
+top_radius = 3.5
+bottom_radius = 4.0
+height = 0.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_platform"]
+albedo_color = Color(0.78, 0.78, 0.74, 1)
+roughness = 0.85
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_tower"]
 top_radius = 0.4
 bottom_radius = 0.55
-height = 12.0
+height = 11.0
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_tower"]
 radius = 0.55
-height = 12.0
+height = 11.0
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tower"]
-albedo_color = Color(0.85, 0.78, 0.50, 1)
-metallic = 0.6
-roughness = 0.45
+[sub_resource type="BoxMesh" id="BoxMesh_gantry"]
+size = Vector3(3.0, 0.2, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="Mat_gantry"]
+albedo_color = Color(0.95, 0.95, 0.95, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Mat_tower"]
+albedo_color = Color(0.85, 0.74, 0.30, 1)
+metallic = 0.4
+roughness = 0.55
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyLP"]
+sky_top_color = Color(0.32, 0.55, 0.85, 1)
+sky_horizon_color = Color(0.85, 0.78, 0.65, 1)
+ground_bottom_color = Color(0.32, 0.20, 0.15, 1)
+ground_horizon_color = Color(0.85, 0.78, 0.65, 1)
+
+[sub_resource type="Sky" id="Sky_LP"]
+sky_material = SubResource("SkyLP")
 
 [sub_resource type="Environment" id="Environment_LP"]
 background_mode = 2
+sky = SubResource("Sky_LP")
 ambient_light_source = 3
 ambient_light_color = Color(0.85, 0.85, 0.95, 1)
 ambient_light_energy = 0.55
-
-[sub_resource type="World3D" id="World3D_LP"]
-environment = SubResource("Environment_LP")
 
 [node name="LaunchPad" type="Node3D"]
 
@@ -55,32 +78,56 @@ light_color = Color(1.0, 0.95, 0.85, 1)
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
 mesh = SubResource("BoxMesh_ground")
-material_override = SubResource("StandardMaterial3D_ground")
+material_override = SubResource("Mat_grass")
 
 [node name="GroundCollision" type="CollisionShape3D" parent="Ground"]
 shape = SubResource("BoxShape3D_ground")
 
+[node name="LaunchPlatform" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+
+[node name="PlatformMesh" type="MeshInstance3D" parent="LaunchPlatform"]
+mesh = SubResource("CylinderMesh_platform")
+material_override = SubResource("Mat_platform")
+
 [node name="LaunchTower" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
 
 [node name="TowerMesh" type="MeshInstance3D" parent="LaunchTower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
 mesh = SubResource("CylinderMesh_tower")
-material_override = SubResource("StandardMaterial3D_tower")
+material_override = SubResource("Mat_tower")
 
 [node name="TowerCollision" type="CollisionShape3D" parent="LaunchTower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
 shape = SubResource("CylinderShape3D_tower")
 
+[node name="GantryArm1" type="MeshInstance3D" parent="LaunchTower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 6.0, 0)
+mesh = SubResource("BoxMesh_gantry")
+material_override = SubResource("Mat_gantry")
+
+[node name="GantryArm2" type="MeshInstance3D" parent="LaunchTower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 8.0, 0)
+mesh = SubResource("BoxMesh_gantry")
+material_override = SubResource("Mat_gantry")
+
+[node name="GantryArm3" type="MeshInstance3D" parent="LaunchTower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 10.0, 0)
+mesh = SubResource("BoxMesh_gantry")
+material_override = SubResource("Mat_gantry")
+
 [node name="WarningLights" type="Node3D" parent="LaunchTower"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 11.2, 0)
 
 [node name="Warning1" type="OmniLight3D" parent="LaunchTower/WarningLights"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0, 0)
 light_color = Color(1.0, 0.30, 0.30, 1)
 light_energy = 0.0
 omni_range = 8.0
 
 [node name="Warning2" type="OmniLight3D" parent="LaunchTower/WarningLights"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.6, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0, 0)
 light_color = Color(1.0, 0.30, 0.30, 1)
 light_energy = 0.0
 omni_range = 8.0
@@ -89,7 +136,7 @@ omni_range = 8.0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 gravity_scale = 0.0
 script = ExtResource("2")
-builder_path = NodePath("../Rocket/RocketBuilder")
+builder_path = NodePath("RocketBuilder")
 
 [node name="RocketBuilder" type="Node3D" parent="Rocket"]
 script = ExtResource("3")
@@ -101,6 +148,12 @@ rocket_root_path = NodePath("RocketRoot")
 
 [node name="Exhaust" type="GPUParticles3D" parent="Rocket"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.0, 0)
+
+[node name="ExhaustGlow" type="OmniLight3D" parent="Rocket"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0)
+light_color = Color(1.0, 0.55, 0.20, 1)
+light_energy = 0.0
+omni_range = 12.0
 
 [node name="LaunchCamera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.94, 0.34, 0, -0.34, 0.94, 7, 4, 12)

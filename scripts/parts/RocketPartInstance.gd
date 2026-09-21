@@ -3,13 +3,20 @@ class_name RocketPartInstance
 ## Runtime wrapper for a single part instance inside a rocket. Owns its
 ## MeshInstance3D + collision shape + attached exhaust (for engines).
 ## Receives part data from RocketBuilder and re-builds the visuals on demand.
+##
+## Phase 3: if the part has a `glb_path` and the file exists, the .glb is
+## loaded and its first mesh replaces the primitive. Otherwise the
+## primitive fallback is used.
 
 signal material_changed()
 
 const RocketPartData = preload("res://resources/RocketPartData.gd")
+const AssetLoader = preload("res://scripts/AssetLoader.gd")
+const ToonShader = preload("res://shaders/toon.gdshader")
 
 @export var data: RocketPartData
 @export var slot_index: int = 0   # which fin/booster index this is (0..3)
+@export var use_toon_shader: bool = true   # Phase 3: cartoon shading
 
 var mesh_instance: MeshInstance3D
 var collision: CollisionShape3D
@@ -40,8 +47,26 @@ func setup(d: RocketPartData) -> void:
 func _rebuild() -> void:
 	if data == null:
 		return
-	mesh_instance.mesh = data.primitive_mesh
-	mesh_instance.set_surface_override_material(0, _make_material())
+	# Phase 3: try .glb first via AssetLoader, fall back to primitive.
+	var mesh: Mesh = AssetLoader.load_part_mesh(data)
+	mesh_instance.mesh = mesh
+	# Use the toon shader on top of whatever mesh we got, so primitives
+	# and .glb meshes share the same cartoon look.
+	if use_toon_shader and ToonShader:
+		var mat := ShaderMaterial.new()
+		mat.shader = ToonShader
+		mat.set_shader_parameter("albedo", data.color)
+		mat.set_shader_parameter("accent", data.accent_color)
+		mat.set_shader_parameter("bands", 3.0)
+		mat.set_shader_parameter("rim_strength", 1.6)
+		mat.set_shader_parameter("rim_power", 2.5)
+		var is_engine: bool = data.slot == RocketPartData.Slot.ENGINE
+		mat.set_shader_parameter("emission_strength", 1.5 if is_engine else 0.0)
+		# The toon shader draws its own albedo — let it.
+		mesh_instance.material_override = mat
+		# Don't also set a per-surface override; the shader handles it.
+	else:
+		mesh_instance.set_surface_override_material(0, _make_material())
 	collision.shape = _make_shape()
 	if data.slot == RocketPartData.Slot.ENGINE and engine_glow == null:
 		_build_engine_glow()
@@ -90,9 +115,12 @@ func set_engine_glow(strength: float) -> void:
 	if engine_glow == null:
 		return
 	engine_glow.light_energy = clamp(strength, 0.0, 6.0)
-	if mesh_instance and mesh_instance.get_surface_override_material(0) is StandardMaterial3D:
-		var mat: StandardMaterial3D = mesh_instance.get_surface_override_material(0)
-		mat.emission_energy_multiplier = 0.4 + strength * 0.6
+	# Update toon shader emission strength too, so the rim glow tracks the burn.
+	if mesh_instance and mesh_instance.material_override is ShaderMaterial:
+		var mat: ShaderMaterial = mesh_instance.material_override
+		var is_engine: bool = data != null and data.slot == RocketPartData.Slot.ENGINE
+		if is_engine:
+			mat.set_shader_parameter("emission_strength", 1.5 + strength * 0.6)
 
 
 func apply_paint(paint: PaintData) -> void:
@@ -102,3 +130,4 @@ func apply_paint(paint: PaintData) -> void:
 	data.accent_color = paint.accent
 	if is_inside_tree():
 		_rebuild()
+

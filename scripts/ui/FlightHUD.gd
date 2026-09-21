@@ -4,6 +4,7 @@ extends Control
 ## lean warning, and wind-gust pulse.
 
 @export var rocket_path: NodePath
+@export var wind_puff_path: NodePath   # Node3D parent for wind puff effects
 
 
 func _ready() -> void:
@@ -70,12 +71,28 @@ func _on_lean_warning(active: bool) -> void:
 		tw.tween_property($Root/LeanWarning, "modulate:a", 1.0, 0.15)
 
 
-func _on_wind_gust(strength: float) -> void:
+func _on_wind_gust(strength: float, world_pos: Vector3) -> void:
 	$Root/WindPulse.visible = true
 	$Root/WindPulse.text = "💨 Gust!"
 	var tw := create_tween()
 	tw.tween_property($Root/WindPulse, "modulate:a", 0.0, 0.6)
 	tw.tween_callback(func(): $Root/WindPulse.visible = false)
+	# Spawn a one-shot cloud puff at the rocket's current position.
+	if wind_puff_path != NodePath(""):
+		var puff_parent := get_node_or_null(wind_puff_path) as Node3D
+		if puff_parent:
+			var ParticleManager = preload("res://scripts/ParticleManager.gd")
+			var puff: GPUParticles3D = ParticleManager.build_wind_puff()
+			puff.global_position = world_pos
+			puff_parent.add_child(puff)
+			puff.emitting = true
+			# Free after the lifetime + small buffer.
+			var ttl: float = puff.lifetime + 0.5
+			var ft := get_tree().create_timer(ttl)
+			ft.timeout.connect(func():
+				if is_instance_valid(puff):
+					puff.queue_free()
+			)
 
 
 func _on_multiplier(value: float) -> void:

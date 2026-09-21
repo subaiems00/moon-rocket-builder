@@ -16,7 +16,7 @@ signal stability_changed(percent: float)
 signal thrust_changed(percent: float)
 signal landed(touchdown_velocity: float)
 signal lean_warning(active: bool)
-signal wind_gust(strength: float)
+signal wind_gust(strength: float, world_position: Vector3)
 signal failure_event(kind: StringName, details: Dictionary)
 signal multiplier_changed(multiplier: float)
 
@@ -217,7 +217,7 @@ func _apply_wind_gust(_delta: float) -> void:
 	var angle: float = randf() * TAU
 	var dir: Vector3 = Vector3(cos(angle), 0, sin(angle))
 	apply_impulse(dir * strength * mass)
-	wind_gust.emit(strength)
+	wind_gust.emit(strength, global_position)
 	_schedule_next_gust(randf_range(wind_gust_min_interval, wind_gust_max_interval))
 
 
