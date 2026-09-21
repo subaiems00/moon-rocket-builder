@@ -29,3 +29,6 @@ build/
 
 # Local save (do not commit user progress)
 *.local
+
+# CI build output (Godot export presets write here)
+build/
