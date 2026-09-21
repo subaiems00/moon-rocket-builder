@@ -107,7 +107,7 @@ moon_rocket_builder/
 | Phase | Theme              | Status      |
 |-------|--------------------|-------------|
 | 1     | Prototype          | ✅ shipped   |
-| 2     | Gameplay loop      | 🚧 planned  |
+| 2     | Gameplay loop      | ✅ shipped   |
 | 3     | Visual polish      | 🚧 planned  |
 | 4     | Game feel          | 🚧 planned  |
 | 5     | Optimization       | 🚧 planned  |

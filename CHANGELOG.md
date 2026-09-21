@@ -3,6 +3,56 @@
 All notable changes to this project are documented here. Dates are
 ISO-8601 (YYYY-MM-DD).
 
+## [0.2.0] - 2026-09-21 — Phase 2: Gameplay
+
+### Added
+- **Fuel pressure physics** (`RocketController.gd`):
+  thrust scales linearly `0.6 → 1.0` with the fuel ratio (`current_fuel_pct`).
+  Mass scales `0.4 → 1.0` so the rocket accelerates as the tank drains.
+  Tunable via the inspector (`fuel_thrust_floor`, `fuel_mass_floor`,
+  `fuel_burn_per_sec`).
+- **Real stability math**: world-up correction torque that scales with the
+  stability stat. New `lean_warning` signal fires when the rocket is too
+  steep for too long.
+- **Wind gusts**: random horizontal impulses in the atmosphere (alt
+  < 1500 m), strength peaks at 350 m. New `wind_gust(strength)` signal
+  drives HUD pulse + audio.
+- **Failure events** (`FailureManager.gd`): a single API that classifies
+  every landing kind into an `Outcome` struct — `success`,
+  `success_perfect`, `fail_upside_down`, `fail_too_fast`, `fail_out_of_fuel`,
+  `fail_spin_out`, `fail_crash`, `fumes_landing`. Each has a title,
+  subtitle, sfx name, score multiplier, coin bonus, and camera jolt.
+- **Score breakdown** (`FlightController.gd`):
+  `score = (altitude × 100 + fuel_bonus + stab_bonus) × outcome_multiplier × flight_multiplier`.
+  Flight multiplier is 1.0 / 1.5 (low-fuel bonus) / 2.0 (perfect stability).
+- **Currency rewards**: outcome-specific coin bonus (10–120 ¢) + altitude
+  tier bonuses (50 ¢ above 5 km, 100 ¢ above 20 km).
+- **Progression gates**: 6 advanced parts (`nose_pointy`, `body_chubby`,
+  `tank_jumbo`, `engine_boost`, `fin_square`, `booster_big`) unlock on
+  the first successful landing. Toast message via `UIManager.popup_message`.
+- **Flight HUD** overhaul: new Thrust %, Multiplier badge (golden ×2.0,
+  magenta ×1.5), Wind Gust pulse, Lean Warning banner. Fuel + Stability
+  labels turn red when low.
+- **Results screen** overhaul: outcome title + subtitle, full score
+  breakdown (base / fuel / stab / outcome / flight), avg stability,
+  fuel remaining %, plays the outcome-specific SFX.
+
+### Changed
+- `RocketController` split from a single 154-line `_physics_process` into
+  focused helpers (`_apply_thrust`, `_apply_lean_input`,
+  `_apply_stability_recovery`, `_apply_wind_gust`, `_apply_drag`,
+  `_update_telemetry`, `_track_spin`, `_update_multiplier`).
+- `FlightController` now delegates outcome classification to `FailureManager`
+  instead of computing scores inline.
+- All persistent flight data is now structured in `score_breakdown` so
+  other screens can read individual components.
+
+### CI
+- All parse errors from Phase 1 round are now caught at author time.
+  Phase 2 commit `114d986` passed CI on first push.
+
+---
+
 ## [0.1.0] - 2026-09-20 — Phase 1: Prototype
 
 ### Added
