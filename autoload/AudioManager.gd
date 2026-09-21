@@ -34,9 +34,17 @@ func _ensure_bus(bus_name: String) -> void:
 
 func _apply_volumes() -> void:
 	var m := 0.0 if GameManager.mute else GameManager.master_volume
-	AudioServer.set_bus_volume_db(BUS_MASTER, linear_to_db(clamp(m, 0.001, 1.0)))
-	AudioServer.set_bus_volume_db(BUS_MUSIC, linear_to_db(clamp(GameManager.music_volume, 0.001, 1.0)))
-	AudioServer.set_bus_volume_db(BUS_SFX, linear_to_db(clamp(GameManager.sfx_volume, 0.001, 1.0)))
+	AudioServer.set_bus_volume_db(_bus_index(BUS_MASTER), linear_to_db(clamp(m, 0.001, 1.0)))
+	AudioServer.set_bus_volume_db(_bus_index(BUS_MUSIC), linear_to_db(clamp(GameManager.music_volume, 0.001, 1.0)))
+	AudioServer.set_bus_volume_db(_bus_index(BUS_SFX), linear_to_db(clamp(GameManager.sfx_volume, 0.001, 1.0)))
+
+
+func _bus_index(bus_name: String) -> int:
+	var i := AudioServer.get_bus_index(bus_name)
+	if i < 0:
+		push_warning("AudioManager: bus '%s' not found" % bus_name)
+		return 0
+	return i
 
 
 func _on_settings_changed() -> void:

@@ -25,7 +25,7 @@ func _on_altitude(km: float) -> void:
 	$Root/TopLeft/Altitude.text = "%.2f km" % km
 	# Distance to "moon" — fake heuristic: starts ~384 000 km, decreases as
 	# altitude grows. Phase 2 will use real spatial distance.
-	var fake_distance := max(384000.0 - km * 1.0, 0.0)
+	var fake_distance: float = maxf(384000.0 - km * 1.0, 0.0)
 	$Root/TopLeft/Moon.text = "%d km" % int(fake_distance)
 
 

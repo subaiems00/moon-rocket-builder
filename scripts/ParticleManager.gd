@@ -154,10 +154,10 @@ static func build_moon() -> MeshInstance3D:
 
 static func _soft_circle_texture() -> Texture2D:
 	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
-	for y in 64:
-		for x in 64:
-			var d := Vector2(x - 32, y - 32).length() / 32.0
-			var a := clamp(1.0 - d, 0.0, 1.0)
+	for y: int in 64:
+		for x: int in 64:
+			var d: float = Vector2(x - 32, y - 32).length() / 32.0
+			var a: float = clampf(1.0 - d, 0.0, 1.0)
 			a *= a
 			img.set_pixel(x, y, Color(1, 1, 1, a))
 	return ImageTexture.create_from_image(img)

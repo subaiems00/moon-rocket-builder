@@ -39,13 +39,12 @@ func _process(delta: float) -> void:
 		return
 	_elapsed += delta
 	# End conditions
-	if _rocket and _rocket.has_method("get") and _rocket.get("linear_velocity") != null:
-		var v: Vector3 = _rocket.linear_velocity
+	if _rocket:
 		if _rocket.global_position.y < -30.0:
 			_end(false, "Crashed into the ground")
 		elif _elapsed > 90.0:
 			_end(true, "Mission complete")
-		elif _rocket.get("_has_landed") and bool(_rocket.get("_has_landed")):
+		elif bool(_rocket.get("_has_landed")):
 			_end(true, "Touchdown!")
 
 
@@ -76,7 +75,7 @@ func _end(success: bool, reason: String, touchdown_v: float = 0.0) -> void:
 	var payload := {
 		"score": int(_altitude_km * 100.0) + (200 if success else 0),
 		"max_altitude_km": _altitude_km,
-		"fuel_remaining": float(_rocket.get("_fuel_units") if _rocket and _rocket.get("_fuel_units") != null else 0.0),
+		"fuel_remaining": float(_rocket.get("_fuel_units")) if _rocket and _rocket.get("_fuel_units") != null else 0.0,
 		"stability_bonus": 0,
 		"coins_earned": 100 if success else 25,
 		"landed": success,

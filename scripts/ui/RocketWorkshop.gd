@@ -25,8 +25,8 @@ func _ready() -> void:
 	_back_button.pressed.connect(_on_back)
 	_launch_button.pressed.connect(_on_launch)
 	# Build category tabs.
-	for slot_name in ["Nose", "Body", "Tank", "Engine", "Fin", "Booster"]:
-		var slot_id := RocketPartData.Slot[slot_name.to_upper()]
+	for slot_name: String in ["Nose", "Body", "Tank", "Engine", "Fin", "Booster"]:
+		var slot_id: int = RocketPartData.Slot[slot_name.to_upper()]
 		var btn := Button.new()
 		btn.text = slot_name
 		btn.toggle_mode = true

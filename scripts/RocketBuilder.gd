@@ -71,7 +71,7 @@ func install_part(slot: int, part: RocketPartData) -> bool:
 		fins.append(part)
 		_slots["FIN"] = fins
 	else:
-		var key := Slot.keys()[slot]
+		var key := RocketPartData.Slot.keys()[slot]
 		_slots[key] = [part]
 	part_added.emit(slot, part.id)
 	_rebuild()
@@ -79,7 +79,7 @@ func install_part(slot: int, part: RocketPartData) -> bool:
 
 
 func remove_part(slot: int) -> void:
-	var key := Slot.keys()[slot]
+	var key := RocketPartData.Slot.keys()[slot]
 	if _slots.has(key):
 		var removed: Array = _slots[key]
 		if removed.is_empty():
@@ -90,7 +90,7 @@ func remove_part(slot: int) -> void:
 
 
 func get_part(slot: int, instance_index: int = 0) -> RocketPartData:
-	var key := Slot.keys()[slot]
+	var key := RocketPartData.Slot.keys()[slot]
 	if not _slots.has(key):
 		return null
 	var arr: Array = _slots[key]
@@ -100,7 +100,7 @@ func get_part(slot: int, instance_index: int = 0) -> RocketPartData:
 
 
 func get_parts(slot: int) -> Array:
-	var key := Slot.keys()[slot]
+	var key := RocketPartData.Slot.keys()[slot]
 	if not _slots.has(key):
 		return []
 	return _slots[key].duplicate()
@@ -232,7 +232,7 @@ func _rebuild() -> void:
 
 func _spawn_instance(data: RocketPartData) -> RocketPartInstance:
 	var inst := RocketPartInstance.new()
-	inst.name = "Part_%s_%d" % [Slot.keys()[data.slot].capitalize(), randi() % 10000]
+	inst.name = "Part_%s_%d" % [RocketPartData.Slot.keys()[data.slot].capitalize(), randi() % 10000]
 	inst.setup(data)
 	_instances_root.add_child(inst)
 	return inst
