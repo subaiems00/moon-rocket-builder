@@ -109,7 +109,7 @@ moon_rocket_builder/
 | 1     | Prototype          | ✅ shipped   |
 | 2     | Gameplay loop      | ✅ shipped   |
 | 3     | Visual polish      | ✅ shipped   |
-| 4     | Game feel          | 🚧 planned  |
+| 4     | Game feel          | ✅ shipped   |
 | 5     | Optimization       | 🚧 planned  |
 
 See [`docs/phase-1.md`](docs/phase-1.md) for the Phase 1 test plan and

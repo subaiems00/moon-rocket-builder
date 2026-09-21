@@ -3,6 +3,61 @@
 All notable changes to this project are documented here. Dates are
 ISO-8601 (YYYY-MM-DD).
 
+## [0.4.0] - 2026-09-21 — Phase 4: Game feel
+
+### Added
+- **Cinematic launch** — 3-stage ignition: starter motor → idle → main
+  thrust. Exhaust particles scale and color-shift with thrust (idle =
+  small yellow flame, full thrust = bright orange/red flame). Exhaust
+  `OmniLight` ramps 0 → 10 over 0.15 s. Engine glow per-part scales
+  with thrust. `LaunchSequence` dollies the camera offset (ground →
+  chase) over 1.2 s during ignition, 2.5 s at lift-off, both with
+  cubic-out easing.
+- **Camera shake upgrade** — `CinematicCamera.add_shake(impulse)` for
+  one-shot kicks plus a continuous throb (low-freq sin wave) +
+  jitter (high-freq white noise), so shakes feel meaty without being
+  nauseating. Decays smoothly toward `shake_intensity`.
+- **Scene transitions** — new `ScreenTransition` autoload does
+  fade-through-black on every `UIManager.goto_scene` call
+  (0.25 s out, 0.30 s in).
+- **Failure animations** — `FailureAnimations.play_failure(kind, rocket,
+  camera)` routes to per-kind beats:
+    - `success` / `perfect` → confetti + squash-and-settle
+    - `fumes_landing` → success variant with extra sparkle
+    - `fail_speed` → big bounce + camera jolt + dust burst
+    - `fail_upside_down` → 180° tumble tween + dust
+    - `fail_out_of_fuel` → quiet dust settle
+    - `fail_spin` → 3-loop slow tumble
+    - `fail_crash` → dust + squash
+  `FlightController._end` delays the scene swap by 1.4 s so the
+  player sees the beat.
+- **Audio polish** — 4 new procedural SFX: `engine_thrust`,
+  `wind_gust`, `booster_sep` (metallic clank), `success_stinger`
+  (ascending sweep). `LaunchSequence` swaps `engine_loop` for
+  `engine_thrust` on main ignition.
+- **Touch input** — `VirtualJoystick` (160 px circular base + draggable
+  thumb) emits `yaw_left/right` and `pitch_up/down` via
+  `Input.action_press`. `VirtualBoostButton` (144 px round button) holds
+  `pitch_up` while pressed with a pulse animation.
+- **Particle polish** — `RocketController` now drives the exhaust
+  `ParticleProcessMaterial`: scale, initial velocity, color, and
+  amount all scale with throttle. `ParticleManager.build_confetti`
+  (80 particles, 4-color ramp) and `build_dust_burst` (sand-colored
+  ground kick) for the new failure beats.
+- **UI micro-interactions** — `FlightHUD` multiplier badge scales with a
+  back-out overshoot (1.25 → 1.0) when it ticks up. LeanWarning pulses
+  via `set_loops(2)`. `ResultsScreen` title pops in with back-out,
+  score label counts up from 0 to final over 1 s, coins badge bounces
+  in from zero.
+
+### Fixed (CI catches these)
+- DO NOT add `class_name X` to an autoload script — the autoload
+  name is already the global identifier. `class_name X` triggers
+  `Class 'X' hides an autoload singleton` and every method call
+  becomes `Cannot call non-static function on the class`.
+
+---
+
 ## [0.3.0] - 2026-09-21 — Phase 3: Visual polish
 
 ### Added
