@@ -141,6 +141,10 @@ theme_override_font_sizes/font_size = 22
 text = "100%"
 theme_override_font_sizes/font_size = 22
 
+[node name="Thrust" type="Label" parent="UI/FlightHUD/Root/TopLeft"]
+text = "0%"
+theme_override_font_sizes/font_size = 22
+
 [node name="Stability" type="Label" parent="UI/FlightHUD/Root/TopLeft"]
 text = "100%"
 theme_override_font_sizes/font_size = 22
@@ -148,6 +152,42 @@ theme_override_font_sizes/font_size = 22
 [node name="Moon" type="Label" parent="UI/FlightHUD/Root/TopLeft"]
 text = "∞ km"
 theme_override_font_sizes/font_size = 22
+
+[node name="Multiplier" type="Label" parent="UI/FlightHUD/Root"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -180.0
+offset_top = 70.0
+offset_right = -16.0
+offset_bottom = 130.0
+horizontal_alignment = 2
+text = "×1.0"
+theme_override_font_sizes/font_size = 42
+theme_override_colors/font_color = Color(1, 0.85, 0.30, 1)
+
+[node name="WindPulse" type="Label" parent="UI/FlightHUD/Root"]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 100.0
+offset_right = 100.0
+offset_bottom = 160.0
+horizontal_alignment = 1
+text = "💨 Gust!"
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.85, 0.95, 1.0, 1)
+
+[node name="LeanWarning" type="Label" parent="UI/FlightHUD/Root"]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 180.0
+offset_right = 120.0
+offset_bottom = 240.0
+horizontal_alignment = 1
+text = "⚠ Too steep!"
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1.0, 0.55, 0.30, 1)
 
 [node name="Pause" type="HBoxContainer" parent="UI/FlightHUD/Root"]
 anchor_left = 1.0

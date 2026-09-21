@@ -48,6 +48,8 @@ func _ready() -> void:
 
 
 func default_unlocked_parts() -> Array[StringName]:
+	# Default — works for new players. The advanced parts are gated behind
+	# a first successful landing (see record_flight -> unlock_from_first_landing).
 	return [
 		&"body_classic",
 		&"tank_basic",
@@ -56,6 +58,18 @@ func default_unlocked_parts() -> Array[StringName]:
 		&"nose_classic",
 		&"booster_small",
 	]
+
+
+# Parts gated behind progression. They become available after the first
+# successful landing — encourages the player to actually reach the Moon.
+const PHASE_2_UNLOCK_PARTS: Array[StringName] = [
+	&"nose_pointy",
+	&"body_chubby",
+	&"tank_jumbo",
+	&"engine_boost",
+	&"fin_square",
+	&"booster_big",
+]
 
 
 func default_unlocked_cosmetics() -> Array[StringName]:
@@ -110,8 +124,23 @@ func record_flight(payload: Dictionary) -> void:
 	last_result = payload.duplicate(true)
 	landings_changed.emit(successful_landings)
 	flight_finished.emit(payload)
+	# Phase 2 progression: gate advanced parts behind the first landing.
+	if payload.get("landed", false) and successful_landings == 1:
+		_unlock_phase_2_parts()
 	if SaveManager and SaveManager.has_method("save_from"):
 		SaveManager.save_from(self)
+
+
+func _unlock_phase_2_parts() -> void:
+	var newly_unlocked: Array[StringName] = []
+	for part_id in PHASE_2_UNLOCK_PARTS:
+		if not unlocked_parts.get(part_id, false):
+			unlocked_parts[part_id] = true
+			newly_unlocked.append(part_id)
+	if not newly_unlocked.is_empty():
+		unlocks_changed.emit()
+		# Surface a toast so the player knows.
+		UIManager.popup_message("New parts unlocked! Visit Workshop.", 4.0)
 
 
 func set_setting(name: String, value) -> void:
