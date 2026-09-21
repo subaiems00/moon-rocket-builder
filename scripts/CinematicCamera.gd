@@ -3,6 +3,8 @@ class_name CinematicCamera
 ## Smoothly tracks a target with configurable offset + smooth time.
 ## Phase 4: adds an impulse-driven shake layer on top of continuous
 ## jitter, so ignition kicks feel meaty without being nauseating.
+## Phase 5: respects GameManager.reduce_motion — all shake is muted
+## when that flag is true.
 
 @export var target_path: NodePath
 @export var offset: Vector3 = Vector3(0, 2.5, 7.0)
@@ -40,8 +42,11 @@ func _process(delta: float) -> void:
 	if look.distance_to(global_position) > 0.001:
 		look_at(look, Vector3.UP)
 
-	# Smoothly approach the externally-set shake_intensity so impulses decay.
-	_shake = lerpf(_shake, clampf(shake_intensity, 0.0, max_shake), clampf(delta * 4.0, 0.0, 1.0))
+	# Reduce-motion: kill all shake.
+	var shake_target: float = 0.0
+	if GameManager and not GameManager.reduce_motion:
+		shake_target = clampf(shake_intensity, 0.0, max_shake)
+	_shake = lerpf(_shake, shake_target, clampf(delta * 4.0, 0.0, 1.0))
 	if _shake > 0.001:
 		_t += delta
 		# High-frequency jitter for grit.
@@ -61,7 +66,10 @@ func _process(delta: float) -> void:
 
 ## Called by external events (ignition, lift-off, crash) to add a
 ## one-shot shake impulse on top of the continuous shake_intensity.
+## Phase 5: no-op if reduce-motion is on.
 func add_shake(impulse: float = 0.4) -> void:
+	if GameManager and GameManager.reduce_motion:
+		return
 	_shake = clampf(_shake + impulse, 0.0, max_shake * 1.5)
 
 

@@ -32,6 +32,10 @@ func _ensure_bus(bus_name: String) -> void:
 		AudioServer.set_bus_send(idx, BUS_MASTER)
 
 
+func apply_volumes() -> void:
+	_apply_volumes()
+
+
 func _apply_volumes() -> void:
 	var m := 0.0 if GameManager.mute else GameManager.master_volume
 	AudioServer.set_bus_volume_db(_bus_index(BUS_MASTER), linear_to_db(clamp(m, 0.001, 1.0)))

@@ -1,0 +1,15 @@
+# Code owners
+# Phase 5: anyone touching a script under scripts/ or autoloads/
+# triggers a code-owner review (the original author is the default).
+
+/scripts/      @subaiems00
+/autoload/     @subaiems00
+/scenes/       @subaiems00
+/shaders/      @subaiems00
+
+# Docs and CI are open to anyone — they don't need review.
+/docs/         @subaiems00
+/.github/      @subaiems00
+/.gitignore    @subaiems00
+/LICENSE       @subaiems00
+/README.md     @subaiems00

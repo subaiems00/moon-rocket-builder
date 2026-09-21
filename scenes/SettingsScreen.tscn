@@ -84,8 +84,23 @@ theme_override_font_sizes/font_size = 22
 [node name="Mute" type="CheckButton" parent="Root/Sliders"]
 button_pressed = false
 
+[node name="ReduceMotionLabel" type="Label" parent="Root/Sliders"]
+text = "Reduce motion"
+theme_override_font_sizes/font_size = 22
+
+[node name="ReduceMotion" type="CheckButton" parent="Root/Sliders"]
+button_pressed = false
+
 [node name="Buttons" type="HBoxContainer" parent="Root"]
 size_flags_horizontal = 4
+theme_override_constants/separation = 16
+
+[node name="ResetButton" type="Button" parent="Root/Buttons"]
+custom_minimum_size = Vector2(220, 64)
+text = "Reset defaults"
+script = ExtResource("2")
+font_size = 22
+base_color = Color(0.85, 0.42, 0.42, 1)
 
 [node name="BackButton" type="Button" parent="Root/Buttons"]
 custom_minimum_size = Vector2(220, 64)

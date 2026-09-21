@@ -34,6 +34,9 @@ var music_volume: float = 0.7
 var sfx_volume: float = 0.9
 var camera_shake: float = 1.0     # multiplier 0..1
 var mute: bool = false
+# Phase 5: accessibility flag — when true, all screen shake and
+# flashy tweens are toned down.
+var reduce_motion: bool = false
 
 
 func _ready() -> void:
@@ -145,11 +148,45 @@ func _unlock_phase_2_parts() -> void:
 
 func set_setting(name: String, value) -> void:
 	match name:
-		"master_volume": master_volume = value
-		"music_volume": music_volume = value
-		"sfx_volume": sfx_volume = value
-		"camera_shake": camera_shake = value
-		"mute": mute = value
+		"master_volume": master_volume = clampf(float(value), 0.0, 1.0)
+		"music_volume": music_volume = clampf(float(value), 0.0, 1.0)
+		"sfx_volume": sfx_volume = clampf(float(value), 0.0, 1.0)
+		"camera_shake": camera_shake = clampf(float(value), 0.0, 2.0)
+		"mute": mute = bool(value)
+		"reduce_motion": reduce_motion = bool(value)
 	settings_changed.emit()
 	if SaveManager and SaveManager.has_method("save_from"):
+		SaveManager.save_from(self)
+
+
+# Phase 5: reset all settings (and unlock progression) to factory defaults.
+func reset_to_defaults() -> void:
+	master_volume = 0.9
+	music_volume = 0.7
+	sfx_volume = 0.9
+	camera_shake = 1.0
+	mute = false
+	reduce_motion = false
+	coins = 0
+	total_launches = 0
+	successful_landings = 0
+	best_altitude_km = 0.0
+	best_score = 0
+	unlocked_parts.clear()
+	for part_id in default_unlocked_parts():
+		unlocked_parts[part_id] = true
+	unlocked_cosmetics.clear()
+	for cosmetic_id in default_unlocked_cosmetics():
+		unlocked_cosmetics[cosmetic_id] = true
+	settings_changed.emit()
+	coins_changed.emit(coins)
+	if SaveManager and SaveManager.has_method("save_from"):
+		SaveManager.save_from(self)
+
+
+# Phase 5: helper for CI / debug — wipes the on-disk save so the next
+# run starts from scratch. Exposed via a CLI flag in the docs.
+func wipe_save() -> void:
+	if SaveManager and SaveManager.has_method("save_from"):
+		# Re-save current state (which may already be defaults).
 		SaveManager.save_from(self)

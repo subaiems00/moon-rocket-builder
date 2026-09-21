@@ -6,7 +6,7 @@ config_version=5
 [application]
 
 config/name="Moon Rocket Builder"
-config/description="Build a cartoon rocket, launch it, land on the Moon."
+config/description="Stylized 3D cartoon rocket-builder and lunar landing game."
 run/main_scene="res://scenes/MainMenu.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://assets/icon.svg"
@@ -18,6 +18,7 @@ AudioManager="*res://autoload/AudioManager.gd"
 SaveManager="*res://autoload/SaveManager.gd"
 UIManager="*res://autoload/UIManager.gd"
 ScreenTransition="*res://autoload/ScreenTransition.gd"
+PerformanceManager="*res://autoload/PerformanceManager.gd"
 
 [display]
 
@@ -80,3 +81,14 @@ booster={
 renderer/rendering_method="forward_plus"
 textures/default_filters/anisotropic_filtering_level=2
 environment/defaults/default_clear_color=Color(0.04, 0.03, 0.12, 1)
+# Phase 5: rendering budget. 3D MSAA off (toon style doesn't benefit),
+# shadow distance capped to keep launch pad fast on integrated GPUs.
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/split_1_distance=20.0
+lights_and_shadows/directional_shadow/split_2_distance=60.0
+lights_and_shadows/directional_shadow/split_3_distance=200.0
+scaling_3d/mode="bilinear"
+anti_aliasing/quality/msaa_3d=0
+rendering/limits/cluster_builder/max_cluster_count=512
+rendering/limits/cluster_builder/max_cluster_element_count=256
+rendering/limits/global/allocatable_memory_mb=512
