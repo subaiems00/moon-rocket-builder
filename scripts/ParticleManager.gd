@@ -296,6 +296,104 @@ static func build_wind_puff() -> GPUParticles3D:
 	return particles
 
 
+static func build_confetti() -> GPUParticles3D:
+	# Burst of cartoon confetti — for successful landings.
+	var particles := GPUParticles3D.new()
+	particles.amount = 80
+	particles.lifetime = 2.0
+	particles.explosiveness = 1.0
+	particles.one_shot = true
+	particles.local_coords = false
+	particles.fixed_fps = 30
+
+	var mat := ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 90.0
+	mat.initial_velocity_min = 3.0
+	mat.initial_velocity_max = 7.0
+	mat.gravity = Vector3(0, -3.5, 0)
+	mat.scale_min = 0.3
+	mat.scale_max = 0.5
+	mat.color = Color(1, 1, 1)
+
+	# Bright confetti colors via the color ramp.
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color(1.0, 0.85, 0.30))
+	gradient.set_color(1, Color(1.0, 0.45, 0.65))
+	gradient.set_color(2, Color(0.45, 0.85, 1.0))
+	gradient.set_color(3, Color(0.50, 1.00, 0.55))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = gradient
+	mat.color_ramp = ramp
+
+	particles.process_material = mat
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2(0.18, 0.10)
+	var mesh_mat := StandardMaterial3D.new()
+	mesh_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mesh_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mesh_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mesh_mat.albedo_color = Color(1, 1, 1)
+	mesh_mat.albedo_texture = _confetti_texture()
+	mesh.material = mesh_mat
+	particles.draw_pass_1 = mesh
+	return particles
+
+
+static func build_dust_burst(scale: float = 1.0) -> GPUParticles3D:
+	# Ground-impact dust kick — for crashes and bounces.
+	var particles := GPUParticles3D.new()
+	particles.amount = int(40 * scale)
+	particles.lifetime = 1.2
+	particles.explosiveness = 1.0
+	particles.one_shot = true
+	particles.local_coords = false
+	particles.fixed_fps = 30
+
+	var mat := ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 60.0
+	mat.initial_velocity_min = 1.5 * scale
+	mat.initial_velocity_max = 4.0 * scale
+	mat.gravity = Vector3(0, -2.0, 0)
+	mat.scale_min = 0.6 * scale
+	mat.scale_max = 1.4 * scale
+	mat.damping_min = 0.5
+	mat.damping_max = 1.0
+	mat.color = Color(0.85, 0.78, 0.62)
+
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color(0.90, 0.82, 0.65, 0.95))
+	gradient.set_color(1, Color(0.78, 0.70, 0.55, 0.7))
+	gradient.set_color(2, Color(0.70, 0.62, 0.48, 0.0))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = gradient
+	mat.color_ramp = ramp
+
+	particles.process_material = mat
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2(1.2, 1.2)
+	var mesh_mat := StandardMaterial3D.new()
+	mesh_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mesh_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mesh_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mesh_mat.albedo_color = Color(1, 1, 1)
+	mesh_mat.albedo_texture = _soft_circle_texture()
+	mesh.material = mesh_mat
+	particles.draw_pass_1 = mesh
+	return particles
+
+
+# ---------- Internal texture helpers --------------------------------
+
+static func _confetti_texture() -> Texture2D:
+	var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	for y in 16:
+		for x in 16:
+			img.set_pixel(x, y, Color(1, 1, 1, 1))
+	return ImageTexture.create_from_image(img)
+
+
 static func _soft_circle_texture() -> Texture2D:
 	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
 	for y: int in 64:

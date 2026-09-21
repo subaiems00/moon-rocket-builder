@@ -1,16 +1,31 @@
 extends Node
 ## Cross-screen UI helper: scene transitions, toast messages,
 ## modal dialogs. The actual UI lives inside each screen scene.
+##
+## Phase 4: scene transitions now fade through black via the
+## ScreenTransition autoload.
 
 signal scene_changed(path: String)
 
 func goto_scene(path: String) -> void:
-	# Fade out, swap, fade in. Phase 4 will plug a real ColorRect transition here.
-	var err := get_tree().change_scene_to_file(path)
-	if err != OK:
-		push_error("UIManager: failed to change scene to %s (err %d)" % [path, err])
-		return
-	scene_changed.emit(path)
+	# Fade out → swap scene → fade in. The ScreenTransition autoload
+	# keeps itself alive across scene changes.
+	if ScreenTransition and not ScreenTransition.is_busy():
+		ScreenTransition.fade_out(0.25)
+		await ScreenTransition.fade_out_finished
+		var err := get_tree().change_scene_to_file(path)
+		if err != OK:
+			push_error("UIManager: failed to change scene to %s (err %d)" % [path, err])
+			return
+		scene_changed.emit(path)
+		ScreenTransition.fade_in(0.30)
+	else:
+		# Fallback: instant swap.
+		var err := get_tree().change_scene_to_file(path)
+		if err != OK:
+			push_error("UIManager: failed to change scene to %s (err %d)" % [path, err])
+			return
+		scene_changed.emit(path)
 
 
 func popup_message(text: String, duration: float = 2.0) -> void:

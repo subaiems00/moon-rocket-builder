@@ -67,8 +67,8 @@ func _on_thrust(percent: float) -> void:
 func _on_lean_warning(active: bool) -> void:
 	$Root/LeanWarning.visible = active
 	if active:
-		# Tween a brief flash
-		var tw := create_tween()
+		# Tween a brief flash, looped twice so it pulses
+		var tw := create_tween().set_loops(2)
 		tw.tween_property($Root/LeanWarning, "modulate:a", 0.4, 0.15)
 		tw.tween_property($Root/LeanWarning, "modulate:a", 1.0, 0.15)
 
@@ -108,6 +108,13 @@ func _on_multiplier(value: float) -> void:
 		$Root/Multiplier.add_theme_color_override("font_color", Color(0.95, 0.55, 0.95))
 	else:
 		$Root/Multiplier.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
+	# Phase 4: bounce-pulse the badge so the change is felt.
+	$Root/Multiplier.scale = Vector2.ONE * 0.8
+	var tw := create_tween()
+	tw.tween_property($Root/Multiplier, "scale", Vector2.ONE * 1.25, 0.18)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property($Root/Multiplier, "scale", Vector2.ONE, 0.20)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 
 
 func _on_back() -> void:

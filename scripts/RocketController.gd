@@ -143,6 +143,21 @@ func _apply_thrust(delta: float) -> void:
 	current_thrust_pct = throttle * thrust_scale
 	thrust_changed.emit(current_thrust_pct)
 
+	# Phase 4: drive exhaust particle visuals — flame length scales with throttle,
+	# smoke spawn density scales with throttle squared.
+	var exhaust: GPUParticles3D = get_node_or_null("Exhaust")
+	if exhaust and exhaust.process_material is ParticleProcessMaterial:
+		var mat: ParticleProcessMaterial = exhaust.process_material
+		var scale_factor: float = 0.5 + throttle * 1.5
+		mat.scale_min = 0.3 * scale_factor
+		mat.scale_max = 0.6 * scale_factor
+		mat.initial_velocity_min = 4.0 + throttle * 6.0
+		mat.initial_velocity_max = 8.0 + throttle * 8.0
+		# Bright yellow when idle, deep orange at full thrust.
+		var flame_color: Color = Color(1.0, 0.95, 0.50).lerp(Color(1.0, 0.45, 0.20), throttle)
+		mat.color = flame_color
+		exhaust.amount = int(40 + throttle * 100)
+
 
 # ---------- Lean + stability ----------
 

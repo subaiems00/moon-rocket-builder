@@ -86,10 +86,18 @@ func _get_or_generate_sfx(name: String) -> AudioStreamWAV:
 			stream = _gen_rumble(80.0, 0.45, 12.0)
 		"engine_loop":
 			stream = _gen_rumble(55.0, 1.20, 8.0)
+		"engine_thrust":
+			stream = _gen_rumble(45.0, 1.50, 14.0)
 		"launch":
 			stream = _gen_rumble(40.0, 1.80, 6.0)
 		"wind":
 			stream = _gen_noise(0.6, -18.0)
+		"wind_gust":
+			stream = _gen_noise(1.4, -8.0)
+		"booster_sep":
+			stream = _gen_metallic_clank()
+		"success_stinger":
+			stream = _gen_stinger(880.0, 1320.0, 0.5)
 		"touchdown":
 			stream = _gen_rumble(70.0, 0.25, -4.0)
 		"victory":
@@ -103,6 +111,60 @@ func _get_or_generate_sfx(name: String) -> AudioStreamWAV:
 		_:
 			stream = _gen_beep(440.0, 0.05, "sine", -20.0)
 	_stream_cache[name] = stream
+	return stream
+
+
+# ---------- Phase 4 procedural generators -----------------------------
+
+static func _gen_metallic_clank() -> AudioStreamWAV:
+	# Booster separation = a quick metallic clank.
+	var mix_rate := 44100
+	var duration := 0.25
+	var sample_count := int(mix_rate * duration)
+	var stream := AudioStreamWAV.new()
+	stream.mix_rate = mix_rate
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.loop_mode = AudioStreamWAV.LOOP_DISABLED
+	var data := PackedByteArray()
+	data.resize(sample_count * 2)
+	var amp: float = 16000.0
+	for i in range(sample_count):
+		var t: float = float(i) / mix_rate
+		# Quick pitch drop from 1200 Hz to 200 Hz.
+		var freq: float = 1200.0 * exp(-t * 12.0) + 200.0
+		var env: float = clampf(1.0 - (t / duration), 0.0, 1.0)
+		env = env * env
+		# Two detuned oscillators + a noise burst at start.
+		var v: float = sin(TAU * freq * t) * 0.5 + sin(TAU * freq * 1.03 * t) * 0.3
+		if t < 0.02:
+			v += randf_range(-1.0, 1.0) * (1.0 - t / 0.02) * 0.6
+		var s: int = int(clampf(v * amp * env, -32768.0, 32767.0))
+		data.encode_s16(i * 2, s)
+	stream.data = data
+	return stream
+
+
+static func _gen_stinger(freq_start: float, freq_end: float, duration: float) -> AudioStreamWAV:
+	# Bright ascending sweep — played on success.
+	var mix_rate := 44100
+	var sample_count := int(mix_rate * duration)
+	var stream := AudioStreamWAV.new()
+	stream.mix_rate = mix_rate
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.loop_mode = AudioStreamWAV.LOOP_DISABLED
+	var data := PackedByteArray()
+	data.resize(sample_count * 2)
+	var amp: float = 12000.0
+	var phase: float = 0.0
+	for i in range(sample_count):
+		var t: float = float(i) / mix_rate
+		var freq: float = lerpf(freq_start, freq_end, t / duration)
+		phase += TAU * freq / mix_rate
+		var env: float = clampf(1.0 - (t / duration) * 0.7, 0.0, 1.0)
+		var v: float = sin(phase) * 0.6 + sin(phase * 2.0) * 0.3
+		var s: int = int(clampf(v * amp * env, -32768.0, 32767.0))
+		data.encode_s16(i * 2, s)
+	stream.data = data
 	return stream
 
 

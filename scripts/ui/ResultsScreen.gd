@@ -8,6 +8,34 @@ func _ready() -> void:
 	$Root/Buttons/Build.pressed.connect(_on_build)
 	$Root/Buttons/Menu.pressed.connect(_on_menu)
 	_populate()
+	_play_intro_animation()
+
+
+func _play_intro_animation() -> void:
+	# Title pops in with overshoot.
+	$Root/Title.scale = Vector2.ONE * 0.7
+	$Root/Title.modulate.a = 0.0
+	var title_tw := create_tween().set_parallel(true)
+	title_tw.tween_property($Root/Title, "scale", Vector2.ONE, 0.5)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	title_tw.tween_property($Root/Title, "modulate:a", 1.0, 0.3)
+	# Score counts up from 0 to final.
+	var final_score: int = int(GameManager.last_result.get("score", 0))
+	$Root/Score.text = "Score: 0"
+	var score_tw := create_tween()
+	score_tw.tween_method(_set_score_label, 0, final_score, 1.0)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	# Coins badge bounces in.
+	$Root/Coins.scale = Vector2.ZERO
+	var coins_tw := create_tween().set_parallel(true)
+	coins_tw.tween_property($Root/Coins, "scale", Vector2.ONE * 1.2, 0.4)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	coins_tw.tween_property($Root/Coins, "scale", Vector2.ONE, 0.2)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+
+
+func _set_score_label(value: int) -> void:
+	$Root/Score.text = "Score: %d" % value
 
 
 func _populate() -> void:

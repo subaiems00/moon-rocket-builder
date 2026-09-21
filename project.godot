@@ -17,6 +17,7 @@ GameManager="*res://autoload/GameManager.gd"
 AudioManager="*res://autoload/AudioManager.gd"
 SaveManager="*res://autoload/SaveManager.gd"
 UIManager="*res://autoload/UIManager.gd"
+ScreenTransition="*res://autoload/ScreenTransition.gd"
 
 [display]
 

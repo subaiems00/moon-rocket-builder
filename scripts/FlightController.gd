@@ -2,13 +2,18 @@ extends Node
 ## Orchestrates the in-flight loop: ignite, monitor for landing/crash,
 ## classify the outcome via FailureManager, build the score payload,
 ## forward telemetry to the HUD, hand off to ResultsScreen.
+##
+## Phase 4: plays a per-kind failure animation (confetti, dust burst,
+## squash-and-settle, slow tumble) before transitioning.
 
 signal flight_ended(payload: Dictionary)
 
 const FailureManager = preload("res://scripts/FailureManager.gd")
+const FailureAnimations = preload("res://scripts/FailureAnimations.gd")
 
 @export var rocket_path: NodePath
 @export var flight_manager_path: NodePath
+@export var camera_path: NodePath    # optional — for cinematic jolts
 
 var _rocket: Node
 var _fm: Node
@@ -86,9 +91,17 @@ func _end_with_kind(kind: StringName, details: Dictionary, success: bool) -> voi
 		return
 	_started = false
 	var payload := _build_payload(kind, details, success)
-	GameManager.record_flight(payload)
-	flight_ended.emit(payload)
-	UIManager.goto_scene("res://scenes/ResultsScreen.tscn")
+	# Phase 4: play the failure animation before the results screen.
+	# We delay the scene swap by 1.4 s so the player sees the beat.
+	var cam := get_node_or_null(camera_path) as Camera3D
+	FailureAnimations.play_failure(_rocket as Node3D, payload.get("outcome_kind", &"fail_crash"),
+		cam, float(payload.get("outcome_camera_jolt", 0.4)))
+	var ft: SceneTreeTimer = get_tree().create_timer(1.4)
+	ft.timeout.connect(func() -> void:
+		GameManager.record_flight(payload)
+		flight_ended.emit(payload)
+		UIManager.goto_scene("res://scenes/ResultsScreen.tscn")
+	)
 
 
 # Keep the old API as a thin wrapper so we don't break anywhere that calls it.
