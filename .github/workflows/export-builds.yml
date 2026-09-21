@@ -1,8 +1,8 @@
 name: Export builds
 
 # Triggers:
-#   - tag push matching v* → build all 3 platforms, attach binaries to
-#     the GitHub release with the same tag (and create the release
+#   - tag push matching v* → build all 4 platforms, attach binaries
+#     to the GitHub release with the same tag (and create the release
 #     if it doesn't exist).
 #   - workflow_dispatch → manual trigger from the Actions tab. Builds
 #     artifacts but does NOT touch any release. Useful for sanity-
@@ -13,18 +13,6 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
-    inputs:
-      platform:
-        description: 'Which platform(s) to build'
-        required: true
-        type: choice
-        options:
-          - all
-          - windows
-          - linux
-          - macos
-          - web
-        default: all
 
 # Cancel any in-flight run for the same ref.
 concurrency:
@@ -50,18 +38,6 @@ jobs:
           - platform: {label: "Linux",   os: "ubuntu-latest", preset: "Linux/X11 Desktop", ext: "x86_64"}
           - platform: {label: "macOS",   os: "macos-latest",   preset: "macOS Desktop", ext: "app"}
           - platform: {label: "Web",     os: "ubuntu-latest", preset: "Web", ext: "zip"}
-        # workflow_dispatch can narrow down to a single platform.
-        # The matrix filter expression makes the choice work.
-
-    # Only build platforms that match the manual input.
-    # Tags always build all of them.
-    if: |
-      (github.event_name == 'push') ||
-      (inputs.platform == 'all') ||
-      (inputs.platform == 'windows' && matrix.platform.label == 'Windows') ||
-      (inputs.platform == 'linux'   && matrix.platform.label == 'Linux')   ||
-      (inputs.platform == 'macos'   && matrix.platform.label == 'macOS')   ||
-      (inputs.platform == 'web'     && matrix.platform.label == 'Web')
 
     steps:
       - name: Checkout
@@ -120,6 +96,7 @@ jobs:
               "$HOME/.local/share/godot/export_templates/4.3.stable/"
           fi
           rm -rf templates.tpz /tmp/godot-templates-extract
+          echo "Templates installed:"
           ls "$HOME/.local/share/godot/export_templates/4.3.stable/"
 
       - name: Run export
@@ -136,46 +113,68 @@ jobs:
             echo "Errors during import — see godot-import.log"
             exit 1
           fi
-          # Then the actual export.
+          # Then the actual export. The preset name must match a preset
+          # defined in export_presets.cfg. Godot 4.3 platform names:
+          #   "Windows Desktop", "Linux", "macOS", "Web".
           "$GODOT_BIN" --headless --export-release "$PRESET_NAME" --path . 2>&1 | tee godot-export.log
-          if [ ! -f build/${{ matrix.platform.label == 'Web' && 'web/index.html' || (matrix.platform.label == 'macOS' && 'macos/MoonRocketBuilder.app' || (matrix.platform.label == 'Windows' && 'windows/MoonRocketBuilder.exe' || 'linux/MoonRocketBuilder.x86_64')) }} ]; then
-            echo "Export did not produce expected binary"
-            ls -la build/
+          if [ ! -d build/ ]; then
+            echo "Export did not produce build/ directory"
+            ls -la
             exit 1
           fi
+          echo "Build artifacts:"
+          ls -la build/
 
       - name: Package artifact
+        id: package
         shell: bash
         run: |
           mkdir -p artifact
           case "${{ matrix.platform.label }}" in
             Windows)
-              cp build/windows/MoonRocketBuilder.exe artifact/
-              cp build/windows/MoonRocketBuilder.exe.pck artifact/ 2>/dev/null || true
-              # Bundle as a zip for easy download.
-              cd build/windows && zip -r ../../artifact/MoonRocketBuilder-Windows.zip . && cd ../..
+              # Include .exe + .pck + any side files (.console, etc.)
+              cp -r build/windows/. artifact/
+              # The .exe path has no extension; find it.
+              EXE=$(find artifact -maxdepth 1 -type f -executable | head -1)
+              echo "Windows binary: $EXE"
+              if [ -n "$EXE" ]; then
+                cd "$(dirname "$EXE")" && zip -r ../../artifact/MoonRocketBuilder-Windows.zip . && cd ../..
+              fi
               ASSET_NAME="MoonRocketBuilder-Windows.zip"
               ;;
             Linux)
-              cp build/linux/MoonRocketBuilder.x86_64 artifact/
-              cp build/linux/MoonRocketBuilder.x86_64.pck artifact/ 2>/dev/null || true
-              cd build/linux && tar czf ../../artifact/MoonRocketBuilder-Linux.tar.gz . && cd ../..
+              cp -r build/linux/. artifact/
+              EXE=$(find artifact -maxdepth 1 -type f -executable | head -1)
+              echo "Linux binary: $EXE"
+              if [ -n "$EXE" ]; then
+                cd "$(dirname "$EXE")" && tar czf ../../artifact/MoonRocketBuilder-Linux.tar.gz . && cd ../..
+              fi
               ASSET_NAME="MoonRocketBuilder-Linux.tar.gz"
               ;;
             macOS)
-              # .app is a directory — zip it.
-              cd build/macos && zip -r ../../artifact/MoonRocketBuilder-macOS.zip MoonRocketBuilder.app && cd ../..
+              # .app is a directory — zip it (Godot places it at build/macos/<name>.app).
+              APP=$(find build/macos -maxdepth 1 -type d -name '*.app' | head -1)
+              if [ -z "$APP" ]; then
+                APP="build/macos/MoonRocketBuilder.app"
+              fi
+              echo "macOS bundle: $APP"
+              (cd "$(dirname "$APP")" && zip -r ../../artifact/MoonRocketBuilder-macOS.zip "$(basename "$APP")")
               ASSET_NAME="MoonRocketBuilder-macOS.zip"
               ;;
             Web)
+              cp -r build/web/. artifact/
               cd build/web && zip -r ../../artifact/MoonRocketBuilder-Web.zip . && cd ../..
               ASSET_NAME="MoonRocketBuilder-Web.zip"
               ;;
           esac
+          # Move the packaged archive into the artifact/ directory alongside the raw binary.
+          find . -maxdepth 1 -name "MoonRocketBuilder-*.zip" -o -name "MoonRocketBuilder-*.tar.gz" | while read f; do
+            mv "$f" artifact/
+          done
           echo "ASSET_NAME=$ASSET_NAME" >> "$GITHUB_OUTPUT"
           ls -la artifact/
 
-      - name: Upload as workflow artifact (always)
+      - name: Upload as workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: MoonRocketBuilder-${{ matrix.platform.label }}
